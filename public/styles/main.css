@@ -1,12 +1,23 @@
 body {
-    background: #DDDDDD;
+    background: #000;
 }
 
 .navbar {
-    background-color: #800000;
+    background-color: #000;
     color: white;
 }
 
 .page-container {
     margin-top: 75px;
+}
+
+#personalPgBtn{
+    max-width: 50px;
+    max-height: 50px;
+    margin: auto;
+    display: block;
+}
+
+#mySC{
+    font: Ruda;
 }
