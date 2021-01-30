@@ -1,9 +1,9 @@
 body {
-    background: #000;
+    background: #1C1C1C;
 }
 
 .navbar {
-    background-color: #000;
+    background-color: #1C1C1C;
     color: white;
 }
 
@@ -11,13 +11,98 @@ body {
     margin-top: 75px;
 }
 
-#personalPgBtn{
-    max-width: 50px;
-    max-height: 50px;
-    margin: auto;
-    display: block;
+#title{
+    color: #EDC03C;
 }
 
-#mySC{
-    font: Ruda;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    position: relative;
+    background: #272727;
+}
+
+.contain {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    text-align: center;
+}
+
+h1 {
+    font-size: 50px;
+    color: #EDC03C;
+    text-align: center;
+}
+
+.label {
+    text-align: left;
+}
+
+.inputs {
+    text-align: center;
+    position: absolute;
+    top: 45%;
+    width: 450px;
+    color: aliceblue;
+    padding: 50px;
+    height: auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.input {
+    width: 100%;
+    margin: 15px 0;
+    outline: none;
+    padding: 15px 12px;
+    color: aliceblue;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.7), -5px -5px 10px rgba(255, 255, 255, 0.1);
+    background: transparent;
+}
+
+.input:focus {
+    box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.7), inset -5px -5px 10px rgba(255, 255, 255, 0.1);
+}
+
+.go {
+    text-align: center;
+    outline: none;
+    text-decoration: none;
+    margin-top: 30px;
+    color: aliceblue;
+    background: transparent;
+    width: 190px;
+    border: none;
+    height: 40px;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.7), -5px -5px 10px rgba(255, 255, 255, 0.1);
+}
+
+.signUp {
+    text-align: center;
+    outline: none;
+    text-decoration: none;
+    margin-top: 20px;
+    color: aliceblue;
+    background: transparent;
+    width: 190px;
+    border: none;
+    height: 40px;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.7), -5px -5px 10px rgba(255, 255, 255, 0.1);
+}
+
+.go:focus {
+    box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.7), inset -5px -5px 10px rgba(255, 255, 255, 0.1);
+}
+
+.signUp:focus {
+    box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.7), inset -5px -5px 10px rgba(255, 255, 255, 0.1);
 }
