@@ -3,51 +3,10 @@ rhit.BASE64 = null;
 rhit.FB_KEY_USER = "User";
 rhit.FB_KEY_USERNAME = "Username";
 rhit.FB_KEY_PASSWORD = "Password";
+rhit.curUser = null;
 
 rhit.fbLoginManager = null;
 
-// Data model classes
-rhit.User = class {
-	constructor(uid, username, password, email) {
-		this._uid = uid;
-		this._username = username;
-		this._password = password;
-		this._email = email;
-		this._posts = [];
-		this._following = [];
-		this._collections = [];
-		this.parsePassword(password);
-	}
-}
-
-rhit.Post = class {
-	constructor(pid, postBy, pic, title, des) {
-		this._pid = pid;
-		this._postBy = postBy;
-		this._pic = pic;
-		this._title = title;
-		this._des = des;
-		this._likedBy = [];
-		this._savedBy = [];
-		this._comments = [];
-	}
-}
-
-rhit.Comment = class {
-	constructor(cid, commentBy, comment) {
-		this._cid = cid;
-		this._commentBy = commentBy;
-		this._comment = comment;
-	}
-
-	get commentBy() {
-		return this._commentBy;
-	}
-
-	get comment() {
-		return this._comment;
-	}
-}
 
 //Util classes
 function htmlToElement(html) {
@@ -135,12 +94,68 @@ rhit.base64 = class { // for encoding and decoding password
 	};
 }
 
+
+// Data model classes
+rhit.User = class {
+	constructor(username, password) {
+		// , uid, email) {
+		// this._uid = uid;
+		this._username = username;
+		this._password = password;
+		// this._email = email;
+		this._posts = [];
+		this._following = [];
+		this._collections = [];
+	}
+}
+
+rhit.Post = class {
+	constructor(pid, postBy, pic, title, des) {
+		this._pid = pid;
+		this._postBy = postBy;
+		this._pic = pic;
+		this._title = title;
+		this._des = des;
+		this._likedBy = [];
+		this._savedBy = [];
+		this._comments = [];
+	}
+}
+
+rhit.Comment = class {
+	constructor(cid, commentBy, comment) {
+		this._cid = cid;
+		this._commentBy = commentBy;
+		this._comment = comment;
+	}
+
+	get commentBy() {
+		return this._commentBy;
+	}
+
+	get comment() {
+		return this._comment;
+	}
+}
+
 //Page controller classes
 rhit.LoginPageController = class {
 	constructor() {
 		document.querySelector("#loginBtn").addEventListener("click", (event) => {
 			const username = document.querySelector("#inputUsername").value;
 			const password = document.querySelector("#inputPassword").value;
+			if (username.includes(" ")) {
+				alert("Username cannot contain space");
+				return;
+			}
+			if (username == "" || password == "") {
+				alert("Username and password cannot be empty");
+				return;
+			}
+			let i = rhit.fbLoginManager.verifyUser(username);
+			console.log(i);
+			// console.log("username", user.get(rhit.FB_KEY_USERNAME));
+			// console.log("passwd", user.get(rhit.FB_KEY_PASSWORD));
 		});
 
 		document.querySelector("#signupBtn").addEventListener("click", (event) => {
@@ -148,7 +163,14 @@ rhit.LoginPageController = class {
 			const username = document.querySelector("#inputUsername").value;
 			const password = document.querySelector("#inputPassword").value;
 			const encodedPassword = rhit.BASE64.encode(password);
-			//todo check invalid
+			if (username.includes(" ")) {
+				alert("Username cannot contain space");
+				return;
+			}
+			if (username == "" || password == "") {
+				alert("Username and password cannot be empty");
+				return;
+			}
 			rhit.fbLoginManager.add(username, encodedPassword);
 		});
 	}
@@ -167,11 +189,24 @@ rhit.FbLoginManager = class {
 				[rhit.FB_KEY_PASSWORD]: password,
 			})
 			.then(function (docRef) {
-				console.log(docRef.id);
+				console.log("doc id: ", docRef.id);
 			})
 			.catch(function (error) {
 				console.log(error);
 			});
+	}
+
+	//TODO 
+	verifyUser(username) {
+		let doc1 = null;
+		this._ref.where("Username", "==", username).onSnapshot((querySnapshot) => {
+			querySnapshot.forEach((doc) => {
+				console.log(doc.data().Username);
+				doc1 = doc;
+			});
+			return new rhit.User(doc.data().Username, doc.data().Password);
+		});
+		return doc1;
 	}
 }
 
