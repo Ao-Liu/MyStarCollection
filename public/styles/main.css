@@ -77,7 +77,7 @@ h1 {
     text-decoration: none;
     margin-top: 30px;
     color: aliceblue;
-    background: transparent;
+    background: #1242E9; /* transparent */
     width: 190px;
     border: none;
     height: 40px;
@@ -91,7 +91,7 @@ h1 {
     text-decoration: none;
     margin-top: 20px;
     color: aliceblue;
-    background: transparent;
+    background: #30A21A; /* transparent */
     width: 190px;
     border: none;
     height: 40px;
