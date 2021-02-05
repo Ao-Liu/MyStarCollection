@@ -11,7 +11,7 @@ body {
     margin-top: 75px;
 }
 
-#title{
+#title {
     color: #EDC03C;
 }
 
@@ -77,7 +77,8 @@ h1 {
     text-decoration: none;
     margin-top: 30px;
     color: aliceblue;
-    background: #1242E9; /* transparent */
+    /* default: transparent */
+    background: #1242E9;
     width: 190px;
     border: none;
     height: 40px;
@@ -91,7 +92,8 @@ h1 {
     text-decoration: none;
     margin-top: 20px;
     color: aliceblue;
-    background: #30A21A; /* transparent */
+    /* default: transparent */
+    background: #30A21A;
     width: 190px;
     border: none;
     height: 40px;
@@ -105,4 +107,11 @@ h1 {
 
 .signUp:focus {
     box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.7), inset -5px -5px 10px rgba(255, 255, 255, 0.1);
+}
+
+#alertWeakPw,
+#alertInvalidEmail,
+#alertAuthErr,
+#alertAccountCreated {
+    /* display: none; */
 }

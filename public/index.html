@@ -7,37 +7,57 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
+  <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+  <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
   <link href='https://fonts.googleapis.com/css?family=Ruda' rel='stylesheet'>
   <title>MyStarCollection</title>
 </head>
 
 <body>
   <header class="bmd-layout-header">
-    <!-- <div class="navbar navbar-dark bg-faded fixed-top justify-content-left">
-      <button class="navbar-toggler" type="button" data-toggle="" data-target="">
-        <image id="personalPgBtn" class="material-icons" src="images/elipsis.png"></image>
-      </button>
-      <a id="mySC" class="navbar-brand" href="#">&nbsp;&nbsp;MyStarCollection</a>
-    </div> -->
   </header>
   <style>
     body {
       font-family: 'Ruda';
     }
   </style>
-  
+
   <div id="loginPage" class="contain">
+    
     <div class="inputs">
       <h1>MyStar</h1>
       <h1>Collection</h1>
       <div>&nbsp;</div>
-      <label>Username</label>
-      <input id="inputUsername" type="text" placeholder="Username" class="input">
+      <label>Email</label>
+      <input id="inputEmail" type="text" placeholder="Email" class="input">
       <label>Password</label>
       <input id="inputPassword" type="password" placeholder="Password" class="input">
       <button id="loginBtn" href='#' class="go">Login</button>
       <button id="signupBtn" href='#' class="signUp">Sign Up</button>
     </div>
+    <div id="message"></div>
+
+    <div id="alertWeakPw" class="alert alert-danger alert-dismissible fade collapse">
+      <!-- <button type="button" class="close">&times;</button> -->
+      <strong>Weak Password!</strong> Password should be at least 6 characters
+    </div>
+
+    <div id="alertInvalidEmail" class="alert alert-danger alert-dismissible fade collapse">
+      <!-- <button id="dismiss" type="button" class="close" >&times;</button> -->
+      <strong>Invalid Email!</strong> The email address is badly formatted
+    </div>
+
+    <div id="alertAccountCreated" class="alert alert-success alert-dismissible fade collapse">
+      <!-- <button type="button" class="close" data-dismiss="alert">&times;</button> -->
+      <strong>Account Created!</strong> Welcome to MyStarCollection
+    </div>
+
+    <div id="alertAuthErr" class="alert alert-danger alert-dismissible fade collapse">
+      <!-- <button type="button" class="close" data-dismiss="alert">&times;</button> -->
+      <strong>Authentication Error!</strong> An error occured
+    </div>
+
   </div>
 
   <script src="scripts/jquery.min.js"></script>

@@ -3,9 +3,9 @@ rhit.BASE64 = null;
 rhit.FB_KEY_USER = "User";
 rhit.FB_KEY_USERNAME = "Username";
 rhit.FB_KEY_PASSWORD = "Password";
-rhit.curUser = null;
+rhit.CURRENT_USER = null;
 
-rhit.fbLoginManager = null;
+rhit.fbUserManager = null;
 
 
 //Util classes
@@ -97,15 +97,17 @@ rhit.base64 = class { // for encoding and decoding password
 
 // Data model classes
 rhit.User = class {
-	constructor(username, password) {
-		// , uid, email) {
-		// this._uid = uid;
-		this._username = username;
-		this._password = password;
-		// this._email = email;
-		this._posts = [];
-		this._following = [];
-		this._collections = [];
+	// constructor(username, password) {
+	// 	// , uid, email) {
+	// 	// this._uid = uid;
+	// 	this._username = username;
+	// 	this._password = password;
+	// 	// this._email = email;
+	// 	this._posts = [];
+	// 	this._following = [];
+	// 	this._collections = [];
+	constructor() {
+		console.log("user created");
 	}
 }
 
@@ -139,47 +141,14 @@ rhit.Comment = class {
 }
 
 //Page controller classes
-rhit.LoginPageController = class {
-	constructor() {
-		document.querySelector("#loginBtn").addEventListener("click", (event) => {
-			const username = document.querySelector("#inputUsername").value;
-			const password = document.querySelector("#inputPassword").value;
-			if (username.includes(" ")) {
-				alert("Username cannot contain space");
-				return;
-			}
-			if (username == "" || password == "") {
-				alert("Username and password cannot be empty");
-				return;
-			}
-			let i = rhit.fbLoginManager.verifyUser(username);
-			console.log(i);
-			// console.log("username", user.get(rhit.FB_KEY_USERNAME));
-			// console.log("passwd", user.get(rhit.FB_KEY_PASSWORD));
-		});
-
-		document.querySelector("#signupBtn").addEventListener("click", (event) => {
-			console.log("signup btn onclick");
-			const username = document.querySelector("#inputUsername").value;
-			const password = document.querySelector("#inputPassword").value;
-			const encodedPassword = rhit.BASE64.encode(password);
-			if (username.includes(" ")) {
-				alert("Username cannot contain space");
-				return;
-			}
-			if (username == "" || password == "") {
-				alert("Username and password cannot be empty");
-				return;
-			}
-			rhit.fbLoginManager.add(username, encodedPassword);
-		});
-	}
-}
 
 // Firebase manager classes
-rhit.FbLoginManager = class {
+rhit.FbUserManager = class {
 	constructor() {
-		console.log("fbLoginManager created");
+		console.log("fbUserManager created");
+		this._documentSnapshots = [];
+		this._unsusubscribe = null;
+		this._data = null;
 		this._ref = firebase.firestore().collection(rhit.FB_KEY_USER);
 	}
 
@@ -195,30 +164,94 @@ rhit.FbLoginManager = class {
 				console.log(error);
 			});
 	}
+}
 
-	//TODO 
-	verifyUser(username) {
-		let doc1 = null;
-		this._ref.where("Username", "==", username).onSnapshot((querySnapshot) => {
-			querySnapshot.forEach((doc) => {
-				console.log(doc.data().Username);
-				doc1 = doc;
+rhit.initUserAuth = function () {
+	firebase.auth().onAuthStateChanged((user) => {
+		if (user) {
+			const uid = user.uid;
+			const displayName = user.displayName;
+			const email = user.email;
+			const photoURL = user.photoURL;
+			const isAnonymous = user.isAnonymous;
+			const phoneNumber = user.phoneNumber;
+			console.log("user is signed in", uid);
+			console.log('email :>> ', email);
+			console.log('displayName :>> ', displayName);
+			console.log('photoURL :>> ', photoURL);
+			console.log('isAnonymous :>> ', isAnonymous);
+			console.log('phoneNumber :>> ', phoneNumber);
+		} else {
+			console.log("there is no user signed in");
+		}
+	});
+	const inputEmailEl = document.querySelector("#inputEmail");
+	const inputPasswordEl = document.querySelector("#inputPassword");
+
+	document.querySelector("#signupBtn").onclick = (event) => {
+		console.log(`Create account for email: ${inputEmailEl.value} password: ${inputPasswordEl.value}`);
+		firebase.auth().createUserWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value).then((params) => {
+				// $('#alertAccountCreated').addClass('show');
+				alert("Welcome to MyStarCollection!");
+			})
+			.catch((error) => {
+				var errorCode = error.code;
+				var errorMessage = error.message;
+				console.log("create account error", errorCode, errorMessage);
+				switch (errorCode) {
+					case "auth/invalid-email":
+						// $('#alertInvalidEmail').addClass('show');
+						alert("The email address is badly formatted");
+						break;
+					case "auth/weak-password":
+						// $('#alertWeakPw').addClass('show');
+						alert("Password should be at least 6 characters");
+						break;
+					default:
+						alert("An error occured");
+						break;
+				}
+				return;
 			});
-			return new rhit.User(doc.data().Username, doc.data().Password);
-		});
-		return doc1;
+	};
+
+	document.querySelector("#loginBtn").onclick = (event) => {
+		$('#alertInvalidEmail').hide();
+		console.log(`Log in for email: ${inputEmailEl.value} password: ${inputPasswordEl.value}`);
+		firebase.auth().signInWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value)
+			.catch((error) => {
+				var errorCode = error.code;
+				var errorMessage = error.message;
+				console.log("log in error", errorCode, errorMessage);
+				switch (errorCode) {
+					case "auth/wrong-password":
+						alert("Email and password doesn't match");
+						break;
+					case "auth/user-not-found":
+						alert("No such user");
+						break;
+					default:
+						alert("An error occured");
+						break;
+				}
+				return;
+			});
+	};
+}
+
+rhit.initPage = function () {
+	// login page
+	if (document.querySelector("#loginPage")) {
+		console.log("You are on login page");
+		// rhit.fbUserManager = new rhit.FbUserManager();
+		rhit.initUserAuth();
 	}
 }
 
 rhit.main = function () {
 	console.log("Ready");
 	this.BASE64 = new rhit.base64;
-
-	if (document.querySelector("#loginPage")) {
-		console.log("You are on login page");
-		rhit.fbLoginManager = new rhit.FbLoginManager();
-		new rhit.LoginPageController();
-	}
+	rhit.initPage();
 };
 
 rhit.main();
