@@ -98,16 +98,8 @@ h1 {
     color: #ff0047;
 }
 
-#registerBtn {
-    margin-top: -3px;
-}
-
-#registerBtnTxt {
+#signupBtnTxt {
     color: #30A21A;
-    width: 70%;
-}
-
-#loginBtnTxt {
     width: 70%;
 }
 
@@ -118,6 +110,12 @@ h1 {
 }
 
 #pwTxt {
+    text-align: center;
+    margin-bottom: 10px;
+    color: white;
+}
+
+#usernameTxt {
     text-align: center;
     margin-bottom: 10px;
     color: white;

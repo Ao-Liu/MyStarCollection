@@ -5,7 +5,7 @@ rhit.FB_KEY_USERNAME = "Username";
 rhit.FB_KEY_PASSWORD = "Password";
 rhit.CURRENT_USER = null;
 
-rhit.fbUserManager = null;
+rhit.fbAuthManager = null;
 
 
 //Util classes
@@ -140,115 +140,195 @@ rhit.Comment = class {
 	}
 }
 
-//Page controller classes
-
 // Firebase manager classes
-rhit.FbUserManager = class {
+rhit.FbAuthManager = class {
 	constructor() {
-		console.log("fbUserManager created");
-		this._documentSnapshots = [];
-		this._unsusubscribe = null;
-		this._data = null;
-		this._ref = firebase.firestore().collection(rhit.FB_KEY_USER);
+		this._user = null;
+		console.log("You have created fbAuthManager");
 	}
 
-	add(username, password) {
-		this._ref.add({
-				[rhit.FB_KEY_USERNAME]: username,
-				[rhit.FB_KEY_PASSWORD]: password,
-			})
-			.then(function (docRef) {
-				console.log("doc id: ", docRef.id);
-			})
-			.catch(function (error) {
-				console.log(error);
+	beginListening(changeListener) {
+		firebase.auth().onAuthStateChanged((user) => {
+			this._user = user;
+			changeListener();
+		});
+	}
+
+	signIn() {
+		Rosefire.signIn("dd1837bc-1867-4576-9f8f-240dab5f4940", (err, rfUser) => {
+			if (err) {
+				console.log("Rosefire error!", err);
+				return;
+			}
+			console.log("Rosefire success!", rfUser);
+			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
+				const errorCode = error.code;
+				const errorMessage = error.message;
+				if (errorCode == 'auth/invalid-custom-token') {
+					alert("invalild token");
+				} else {
+					console.error("auth error", errorCode, errorMessage);
+				}
 			});
+			console.log(`isSingedIn: ${rhit.fbAuthManager.isSignedIn}`);
+		});
+	}
+
+	signOut() {
+		firebase.auth().signOut().catch((error) => {
+			console.log("sign out error");
+		});
+	}
+
+	get isSignedIn() {
+		return !!this._user;
+	}
+
+	get uid() {
+		return this._user.uid;
 	}
 }
 
-rhit.initUserAuth = function () {
-	firebase.auth().onAuthStateChanged((user) => {
-		if (user) {
-			const uid = user.uid;
-			const displayName = user.displayName;
-			const email = user.email;
-			const photoURL = user.photoURL;
-			const isAnonymous = user.isAnonymous;
-			const phoneNumber = user.phoneNumber;
-			console.log("user is signed in", uid);
-			console.log('email :>> ', email);
-			console.log('displayName :>> ', displayName);
-			console.log('photoURL :>> ', photoURL);
-			console.log('isAnonymous :>> ', isAnonymous);
-			console.log('phoneNumber :>> ', phoneNumber);
-		} else {
-			console.log("there is no user signed in");
-		}
-	});
-	const inputEmailEl = document.querySelector("#emailInput");
-	const inputPasswordEl = document.querySelector("#pwInput");
+//Page controller classes
+rhit.LoginPageController = class {
+	constructor() {
+		firebase.auth().onAuthStateChanged((user) => {
+			if (user) {
+				const uid = user.uid;
+				const displayName = user.displayName;
+				const email = user.email;
+				const photoURL = user.photoURL;
+				const isAnonymous = user.isAnonymous;
+				const phoneNumber = user.phoneNumber;
+				console.log("user is signed in", uid);
+				console.log('email :>> ', email);
+				console.log('displayName :>> ', displayName);
+				console.log('photoURL :>> ', photoURL);
+				console.log('isAnonymous :>> ', isAnonymous);
+				console.log('phoneNumber :>> ', phoneNumber);
+			} else {
+				console.log("there is no user signed in");
+			}
+		});
+		const inputEmailEl = document.querySelector("#emailInput");
+		const inputPasswordEl = document.querySelector("#pwInput");
 
-	document.querySelector("#signupBtn").onclick = (event) => {
-		console.log(`Create account for email: ${inputEmailEl.value} password: ${inputPasswordEl.value}`);
-		firebase.auth().createUserWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value).then((params) => {
-				alert("Welcome to MyStarCollection!");
-			})
-			.catch((error) => {
-				var errorCode = error.code;
-				var errorMessage = error.message;
-				console.log("create account error", errorCode, errorMessage);
-				switch (errorCode) {
-					case "auth/invalid-email":
-						alert("The email address is badly formatted");
-						break;
-					case "auth/weak-password":
-						alert("Password should be at least 6 characters");
-						break;
-					default:
-						alert("An error occured");
-						break;
-				}
-				return;
-			});
-	};
+		document.querySelector("#registerBtn").onclick = (event) => {
+			window.location.href = "/signup.html";
+			// new rhit.SignUpPageController();
+		};
 
-	document.querySelector("#loginBtn").onclick = (event) => {
-		$('#alertInvalidEmail').hide();
-		console.log(`Log in for email: ${inputEmailEl.value} password: ${inputPasswordEl.value}`);
-		firebase.auth().signInWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value)
-			.catch((error) => {
-				var errorCode = error.code;
-				var errorMessage = error.message;
-				console.log("log in error", errorCode, errorMessage);
-				switch (errorCode) {
-					case "auth/wrong-password":
-						alert("Email and password doesn't match");
-						break;
-					case "auth/user-not-found":
-						alert("No such user");
-						break;
-					default:
-						alert("An error occured");
-						break;
-				}
+		document.querySelector("#loginBtn").onclick = (event) => {
+			$('#alertInvalidEmail').hide();
+			console.log(`Log in for email: ${inputEmailEl.value} password: ${inputPasswordEl.value}`);
+			firebase.auth().signInWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value)
+				.catch((error) => {
+					var errorCode = error.code;
+					var errorMessage = error.message;
+					console.log("log in error", errorCode, errorMessage);
+					switch (errorCode) {
+						case "auth/wrong-password":
+							alert("Email and password doesn't match");
+							break;
+						case "auth/user-not-found":
+							alert("No such user");
+							break;
+						default:
+							alert("An error occured");
+							break;
+					}
+					return;
+				});
+		};
+	}
+}
+
+rhit.SignUpPageController = class {
+	constructor() {
+		const inputEmailEl = document.querySelector("#emailInput");
+		const inputPasswordEl = document.querySelector("#pwInput");
+		const inputUsernameEl = document.querySelector("#usernameInput");
+		document.querySelector("#signupBtn").onclick = (event) => {
+			if (inputUsernameEl.value == "" || inputUsernameEl.value.includes(" ")) {
+				alert("Username not valid");
 				return;
-			});
-	};
+			}
+			console.log(`Create account for email: ${inputEmailEl.value} password: ${inputPasswordEl.value} username: ${inputUsernameEl.value}`);
+			firebase.auth().createUserWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value).then((params) => {
+					alert("Welcome to MyStarCollection!");
+					var user = firebase.auth().currentUser;
+					user.updateProfile({
+						displayName: `@${inputUsernameEl.value}`
+					}).then(function () {
+						// Update successful.
+						console.log("new username: ", user.displayName);
+					}).catch(function (error) {
+						console.log(error);
+						switch (error) {
+							default:
+								alert("An error occured");
+								break;
+						}
+						return;
+					});
+				})
+				.catch((error) => {
+					var errorCode = error.code;
+					var errorMessage = error.message;
+					console.log("create account error", errorCode, errorMessage);
+					switch (errorCode) {
+						case "auth/invalid-email":
+							alert("The email address is badly formatted");
+							break;
+						case "auth/weak-password":
+							alert("Password should be at least 6 characters");
+							break;
+						case "auth/email-already-in-use":
+							alert("This email is already been registered");
+							break;
+						default:
+							alert("An error occured");
+							break;
+					}
+					return;
+				});
+		};
+	}
 }
 
 rhit.initPage = function () {
 	// login page
 	if (document.querySelector("#loginPage")) {
 		console.log("You are on login page");
-		// rhit.fbUserManager = new rhit.FbUserManager();
-		rhit.initUserAuth();
+		new rhit.LoginPageController;
+	}
+
+	if (document.querySelector("#signupPage")) {
+		console.log("You are on sign up page");
+		new rhit.SignUpPageController;
+	}
+}
+
+rhit.checkForRedirects = function () {
+	if (document.querySelector("#loginPage") && rhit.fbAuthManager.isSignedIn) {
+		//TODO: list to be replaced with main page
+		// window.location.href = "/list.html";
+	}
+
+	if (!document.querySelector("#loginPage") && !rhit.fbAuthManager.isSignedIn) {
+		//TODO: list to be replaced with main page
+		// window.location.href = "/index.html";
 	}
 }
 
 rhit.main = function () {
 	console.log("Ready");
-	this.BASE64 = new rhit.base64;
-	rhit.initPage();
+	rhit.fbAuthManager = new rhit.FbAuthManager();
+	rhit.fbAuthManager.beginListening(() => {
+		console.log(`isSingedIn: ${rhit.fbAuthManager.isSignedIn}`);
+		rhit.checkForRedirects();
+		rhit.initPage();
+	});
 };
 
 rhit.main();
