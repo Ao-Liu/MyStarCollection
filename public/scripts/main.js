@@ -185,13 +185,12 @@ rhit.initUserAuth = function () {
 			console.log("there is no user signed in");
 		}
 	});
-	const inputEmailEl = document.querySelector("#inputEmail");
-	const inputPasswordEl = document.querySelector("#inputPassword");
+	const inputEmailEl = document.querySelector("#emailInput");
+	const inputPasswordEl = document.querySelector("#pwInput");
 
 	document.querySelector("#signupBtn").onclick = (event) => {
 		console.log(`Create account for email: ${inputEmailEl.value} password: ${inputPasswordEl.value}`);
 		firebase.auth().createUserWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value).then((params) => {
-				// $('#alertAccountCreated').addClass('show');
 				alert("Welcome to MyStarCollection!");
 			})
 			.catch((error) => {
@@ -200,11 +199,9 @@ rhit.initUserAuth = function () {
 				console.log("create account error", errorCode, errorMessage);
 				switch (errorCode) {
 					case "auth/invalid-email":
-						// $('#alertInvalidEmail').addClass('show');
 						alert("The email address is badly formatted");
 						break;
 					case "auth/weak-password":
-						// $('#alertWeakPw').addClass('show');
 						alert("Password should be at least 6 characters");
 						break;
 					default:
