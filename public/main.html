@@ -7,36 +7,35 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
+  <script src="https://kit.fontawesome.com/ae922d7a73.js" crossorigin="anonymous"></script>
+  <link href='https://fonts.googleapis.com/css?family=Ruda' rel='stylesheet'>
   <title>MyStarCollection</title>
 </head>
 
 <body>
-  <header class="bmd-layout-header">
-    <div class="navbar navbar-dark bg-faded fixed-top justify-content-left">
-      <button class="navbar-toggler" type="button" data-toggle="" data-target="">
-        <image id="personalPgBtn" class="material-icons" src="images/elipsis.png"></image>
-      </button>
-      <a id="mySC" class="navbar-brand" href="#">&nbsp;&nbsp;MyStarCollection</a>
-    </div>
-  </header>
-
-  <div id="mainPage" class="container page-container">
-    <div class="ul1">
-      <h2>@Skywalker</h2>
-    </div>
-      <div class="ul1">
-      <button id="LikeBtn" href='#' class="like">Like</button>
-    </div>
-    <div class="ul">
-      <h2>Neptune</h2>
-      <div class="fn">This picture of Neptune was produced from the last whole planet images taken through the green and orange filters on the Voyager 2 narrow angle camera</div><br>
-      <!-- <div>
-        <textarea id="topOne" name="w3review" rows="4" cols="50">This picture of Neptune was produced from the last whole planet images taken through the green and orange filters on the Voyager 2 narrow angle camera</textarea>
-    </div>     -->
-    <button id="LikeBtn" href='#' class="like">Like</button>
-    <button id="CollectBtn" href='#' class="like">Collect</button>
-    <button id="CommentBtn" href='#' class="like">Comment</button>
-    <button id="ShareBtn" href='#' class="like">Share</button>  
+  <style>
+    body {
+      font-family: 'Ruda';
+    }
+  </style>
+  <h4 id="personalBtn"><i class="fas fa-ellipsis-h"></i></h4>
+  <h4 id="logoBtn">MyStarCollection</h4>
+  <div id="mainPage" class="row gutters justify-content-center">
+    <img id="starPic" src="images/neptune.png">
+    
+    <form action="" class="form">
+      <h1 id="starTitle">Neptune</h1>
+      <div>&nbsp;</div>
+      <h3 id="starDes">This picture of Neptune was produced from the last whole planet images taken through the green
+        and orange filters on the Voyager 2 narrow angle camera</h3>
+      <div>&nbsp;</div>
+      <ul id="actionBtns">
+        <li><a href="#"><i id="likeBtn" class="fas fa-heart"></i></a></li>
+        <li><a href="#"><i id="saveBtn" class="fas fa-star"></i></a></li>
+        <li><a href="#"><i id="commentBtn" class="fas fa-comment"></i></a></li>
+        <li><a href="#"><i id="shareBtn" class="fas fa-share"></i></a></li>
+      </ul>
+    </form>
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>

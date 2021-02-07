@@ -228,7 +228,7 @@ rhit.LoginPageController = class {
 			firebase.auth().signInWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value)
 				.then((event) => {
 					alert("Welcome Back!")
-					//TODO navigate to main page
+					window.location.href = "/main.html";
 				}).catch((error) => {
 					let errorCode = error.code;
 					let errorMessage = error.message;
@@ -360,6 +360,34 @@ rhit.WelcomePageController = class {
 		});
 		let user = firebase.auth().currentUser;
 		document.querySelector("#username").innerHTML = user.displayName;
+
+		document.querySelector("#liftOffBtn").onclick = (event) => {
+			window.location.href = "/main.html";
+		}
+	}
+}
+
+rhit.MainPageController = class {
+	constructor() {
+		document.querySelector("#likeBtn").onclick = (event) => {
+			const color = document.querySelector("#likeBtn").style.color;
+			if (color == "rgb(204, 0, 10)") {
+				document.querySelector("#likeBtn").style.color = "#555";
+			} else {
+				document.querySelector("#likeBtn").style.color = "#CC000A";
+			}
+			console.log(color);
+		}
+
+		document.querySelector("#saveBtn").onclick = (event) => {
+			const color = document.querySelector("#saveBtn").style.color;
+			if (color == "rgb(242, 232, 34)") {
+				document.querySelector("#saveBtn").style.color = "#555";
+			} else {
+				document.querySelector("#saveBtn").style.color = "#F2E822";
+			}
+			console.log(color);
+		}
 	}
 }
 
@@ -383,6 +411,11 @@ rhit.initPage = function () {
 	if (document.querySelector("#welcomePage")) {
 		console.log("You are on welcome page");
 		new rhit.WelcomePageController;
+	}
+
+	if (document.querySelector("#mainPage")) {
+		console.log("You are on main page");
+		new rhit.MainPageController;
 	}
 }
 
