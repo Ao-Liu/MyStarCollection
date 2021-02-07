@@ -215,16 +215,23 @@ rhit.LoginPageController = class {
 
 		document.querySelector("#registerBtn").onclick = (event) => {
 			window.location.href = "/signup.html";
-			// new rhit.SignUpPageController();
+			sessionStorage.setItem("TMP_EMAIL", inputEmailEl.value);
+			sessionStorage.setItem("TMP_PW", inputPasswordEl.value);
 		};
 
+		document.querySelector("#forgetPwBtn").onclick = (event) => {
+			window.location.href = "/resetpassword.html";
+		}
+
 		document.querySelector("#loginBtn").onclick = (event) => {
-			$('#alertInvalidEmail').hide();
 			console.log(`Log in for email: ${inputEmailEl.value} password: ${inputPasswordEl.value}`);
 			firebase.auth().signInWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value)
-				.catch((error) => {
-					var errorCode = error.code;
-					var errorMessage = error.message;
+				.then((event) => {
+					alert("Welcome Back!")
+					//TODO navigate to main page
+				}).catch((error) => {
+					let errorCode = error.code;
+					let errorMessage = error.message;
 					console.log("log in error", errorCode, errorMessage);
 					switch (errorCode) {
 						case "auth/wrong-password":
@@ -245,6 +252,10 @@ rhit.LoginPageController = class {
 
 rhit.SignUpPageController = class {
 	constructor() {
+		document.querySelector("#emailInput").value = sessionStorage.getItem("TMP_EMAIL");
+		document.querySelector("#pwInput").value = sessionStorage.getItem("TMP_PW");
+		sessionStorage.removeItem("TMP_EMAIL");
+		sessionStorage.removeItem("TMP_PW");
 		const inputEmailEl = document.querySelector("#emailInput");
 		const inputPasswordEl = document.querySelector("#pwInput");
 		const inputUsernameEl = document.querySelector("#usernameInput");
@@ -260,7 +271,6 @@ rhit.SignUpPageController = class {
 					user.updateProfile({
 						displayName: `@${inputUsernameEl.value}`
 					}).then(function () {
-						// Update successful.
 						console.log("new username: ", user.displayName);
 					}).catch(function (error) {
 						console.log(error);
@@ -271,10 +281,11 @@ rhit.SignUpPageController = class {
 						}
 						return;
 					});
+					window.location.href = "/welcome.html";
 				})
 				.catch((error) => {
-					var errorCode = error.code;
-					var errorMessage = error.message;
+					let errorCode = error.code;
+					let errorMessage = error.message;
 					console.log("create account error", errorCode, errorMessage);
 					switch (errorCode) {
 						case "auth/invalid-email":
@@ -284,7 +295,7 @@ rhit.SignUpPageController = class {
 							alert("Password should be at least 6 characters");
 							break;
 						case "auth/email-already-in-use":
-							alert("This email is already been registered");
+							alert("This email has already been registered");
 							break;
 						default:
 							alert("An error occured");
@@ -293,6 +304,62 @@ rhit.SignUpPageController = class {
 					return;
 				});
 		};
+	}
+}
+
+rhit.ResetPwPageController = class {
+	constructor() {
+		const inputEmailEl = document.querySelector("#emailInput");
+		document.querySelector("#signupBtn").onclick = (event) => {
+			console.log(`Reset password for email: ${inputEmailEl.value}`);
+			firebase.auth().sendPasswordResetEmail(
+					inputEmailEl.value)
+				.then(function () {
+					console.log("verification sent");
+					alert("Please check your email for reset password link")
+				})
+				.catch(function (error) {
+					console.log(error);
+					let errorCode = error.code;
+					switch (errorCode) {
+						case "auth/invalid-email":
+							alert("The email address is badly formatted");
+							break;
+						case "auth/user-not-found":
+							alert("No such user");
+							break;
+						default:
+							alert("An error occured");
+							break;
+					}
+					return;
+				});
+		}
+	}
+}
+
+rhit.WelcomePageController = class {
+	constructor() {
+		firebase.auth().onAuthStateChanged((user) => {
+			if (user) {
+				const uid = user.uid;
+				const displayName = user.displayName;
+				const email = user.email;
+				const photoURL = user.photoURL;
+				const isAnonymous = user.isAnonymous;
+				const phoneNumber = user.phoneNumber;
+				console.log("user is signed in", uid);
+				console.log('email :>> ', email);
+				console.log('displayName :>> ', displayName);
+				console.log('photoURL :>> ', photoURL);
+				console.log('isAnonymous :>> ', isAnonymous);
+				console.log('phoneNumber :>> ', phoneNumber);
+			} else {
+				console.log("there is no user signed in");
+			}
+		});
+		let user = firebase.auth().currentUser;
+		document.querySelector("#username").innerHTML = user.displayName;
 	}
 }
 
@@ -306,6 +373,16 @@ rhit.initPage = function () {
 	if (document.querySelector("#signupPage")) {
 		console.log("You are on sign up page");
 		new rhit.SignUpPageController;
+	}
+
+	if (document.querySelector("#resetPwPage")) {
+		console.log("You are on reset password page");
+		new rhit.ResetPwPageController;
+	}
+
+	if (document.querySelector("#welcomePage")) {
+		console.log("You are on welcome page");
+		new rhit.WelcomePageController;
 	}
 }
 
