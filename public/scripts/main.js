@@ -442,7 +442,7 @@ rhit.initPage = function () {
 rhit.checkForRedirects = function () {
 	if (document.querySelector("#loginPage") && rhit.fbAuthManager.isSignedIn) {
 		//TODO: list to be replaced with main page
-		// window.location.href = "/list.html";
+		window.location.href = "/main.html";
 	}
 
 	if (!document.querySelector("#loginPage") && !rhit.fbAuthManager.isSignedIn) {
