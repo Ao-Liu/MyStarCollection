@@ -234,6 +234,9 @@ rhit.LoginPageController = class {
 					let errorMessage = error.message;
 					console.log("log in error", errorCode, errorMessage);
 					switch (errorCode) {
+						case "auth/invalid-email":
+							alert("The email address is badly formatted");
+							break;
 						case "auth/wrong-password":
 							alert("Email and password doesn't match");
 							break;
