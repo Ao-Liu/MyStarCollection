@@ -388,6 +388,23 @@ rhit.MainPageController = class {
 			}
 			console.log(color);
 		}
+
+		document.querySelector("#followUser").onclick = (event) => {
+			let e = document.getElementById('followUser');
+			let author = document.querySelector("#author").innerHTML;
+			author = author.replace("&nbsp;&nbsp;", "");
+			console.log(author);
+			if (e.classList.contains('fa-user-plus')) {
+				console.log(document.querySelector("#author").innerHTML);
+				e.classList.remove('fa-user-plus');
+				e.classList.add('fa-user-check');
+				alert(`You are now following ${author}`);
+			} else {
+				e.classList.remove('fa-user-check');
+				e.classList.add('fa-user-plus');
+				alert(`You have unfollowed ${author}`);
+			}
+		}
 	}
 }
 
