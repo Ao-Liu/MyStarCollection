@@ -408,6 +408,60 @@ rhit.MainPageController = class {
 				alert(`You have unfollowed ${author}`);
 			}
 		}
+
+		document.querySelector("#commentBtn").onclick = (event) => {
+			// TODO: storageSession pass in save and like state
+			window.location.href = "/comment.html";
+		}
+	}
+}
+
+function createCard(comment) {
+	var user = firebase.auth().currentUser;
+	return htmlToElement(`<h5>${user.displayName}: ${comment}</h5>`);
+}
+
+rhit.CommentPageController = class {
+	constructor() {
+		this._comments = [];
+
+		document.querySelector("#likeBtn").onclick = (event) => {
+			const color = document.querySelector("#likeBtn").style.color;
+			if (color == "rgb(204, 0, 10)") {
+				document.querySelector("#likeBtn").style.color = "#555";
+			} else {
+				document.querySelector("#likeBtn").style.color = "#CC000A";
+			}
+			console.log(color);
+		}
+
+		document.querySelector("#saveBtn").onclick = (event) => {
+			const color = document.querySelector("#saveBtn").style.color;
+			if (color == "rgb(242, 232, 34)") {
+				document.querySelector("#saveBtn").style.color = "#555";
+			} else {
+				document.querySelector("#saveBtn").style.color = "#F2E822";
+			}
+			console.log(color);
+		}
+
+		document.querySelector("#backBtn").onclick = (event) => {
+			// TODO: storageSession pass in save and like state
+			window.location.href = "/main.html";
+		}
+
+		document.querySelector("#submitAddComment").onclick = (event) => {
+			// TODO: firebase add
+			const comment = document.querySelector("#inputComment").value;
+			console.log(`comment = ${comment}`);
+			const newList = htmlToElement('<div id="commentContainer"></div>');
+			const newCard = createCard(comment);
+			newList.append(newCard);
+			const oldList = document.querySelector("#commentContainer");
+			oldList.removeAttribute("id");
+			oldList.hidden = true;
+			oldList.parentElement.append(newList);
+		}
 	}
 }
 
@@ -436,6 +490,11 @@ rhit.initPage = function () {
 	if (document.querySelector("#mainPage")) {
 		console.log("You are on main page");
 		new rhit.MainPageController;
+	}
+
+	if (document.querySelector("#commentPage")) {
+		console.log("You are on comment page");
+		new rhit.CommentPageController;
 	}
 }
 

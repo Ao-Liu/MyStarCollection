@@ -22,11 +22,13 @@ h1 {
 
 .form {
     position: relative;
-    width: 450px;
-    padding: 11vh 40px 20px;
+    width: 600px;
+    padding: 0px 0px 0px;
     background: 131419;
     text-align: center;
     border-radius: 10px;
+    z-index: 999;
+    position: fixed;
 }
 
 .form h2 {
@@ -119,6 +121,14 @@ h1 {
     top: 70px;
 }
 
+#backBtn {
+    left: 30px;
+    color: white;
+    position: fixed;
+    z-index: 999;
+    top: 20px;
+}
+
 #author {
     color: white;
 }
@@ -139,6 +149,13 @@ h1 {
 #starHolder {
     text-align: center;
     justify-content: center;
+}
+
+#commentContainer {
+    color: white;
+    text-align: left;
+    overflow: auto;
+    height: 200px;
 }
 
 body {
@@ -216,12 +233,24 @@ ul li:nth-child(4) a:hover .fas {
     line-height: 40px;
 }
 
-@media (min-width:200px){
+#starPic {
+    opacity: 0.4;
+    filter: alpha(opacity=40);
+    z-index: 1;
+    filter: blur(10px);
+    position: fixed;
+}
+
+#caption {
+    text-align: center;
+}
+
+@media (min-width:200px) {
     #starPic {
-        height: 200px;
-        width: 200px;
+        height: 300px;
+        width: 300px;
     }
-    
+
     #actionBtns {
         text-align: center;
         justify-content: center;
@@ -236,18 +265,20 @@ ul li:nth-child(4) a:hover .fas {
     }
 
     #caption {
-        padding-top: 30px;
         padding-bottom: 0;
+    }
+
+    .form {
+        width: 400px;
     }
 }
 
-@media (min-width:880px){
+@media (min-width:880px) {
     #starPic {
-        margin-right: 4vw;
         height: 400px;
         width: 400px;
     }
-    
+
     #actionBtns {
         text-align: center;
         justify-content: center;
@@ -258,18 +289,20 @@ ul li:nth-child(4) a:hover .fas {
     }
 
     #caption {
-        padding-top: 12vh;
         padding-bottom: 1vh;
+    }
+
+    .form {
+        width: 600px;
     }
 }
 
-@media (min-width:1130px){
+@media (min-width:1130px) {
     #starPic {
-        margin-right: 10vw;
         height: 480px;
         width: 480px;
     }
-    
+
     #actionBtns {
         text-align: center;
         justify-content: center;
@@ -286,7 +319,10 @@ ul li:nth-child(4) a:hover .fas {
     }
 
     #caption {
-        padding-top: 5vh;
         padding-bottom: 1vh;
+    }
+
+    .form {
+        width: 800px;
     }
 }
