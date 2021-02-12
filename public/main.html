@@ -20,7 +20,7 @@
   </style>
   <h4 id="personalBtn"><i class="fas fa-ellipsis-h"></i></h4>
   <h4 id="logoBtn">MyStarCollection</h4>
-  <h4 id="addBtn"><i class="far fa-plus-square"></i></i></h4>
+  <h4 id="addBtn"><i class="far fa-plus-square" data-toggle="modal" data-target="#addStar"></i></i></h4>
   <div id="mainPage" class="row gutters justify-content-center">
     <div id="starHolder">
       <div id="authorHolder" class="row gutters justify-content-left">
@@ -42,6 +42,46 @@
         <li><a href="#"><i id="shareBtn" class="fas fa-share"></i></a></li>
       </ul>
     </form>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addStar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Add A Star</h5>
+          </div>
+          <div class="modal-body">
+
+            <div class="form-group">
+              <label for="formGroupExampleInput">Star Name</label>
+              <input type="text" class="form-control" id="inputStarName" placeholder="Name">
+            </div>
+
+            <div class="form-group">
+              <label for="formGroupExampleInput">Star Description</label>
+              <input type="text" class="form-control" id="inputDes" placeholder="Description">
+            </div>
+
+            <div class="form-group">
+              <label for="formGroupExampleInput">Star Pic URL</label>
+              <input type="text" class="form-control" id="inputUrl" placeholder="URL">
+            </div>
+            <small>Or</small>
+            <div>&nbsp;</div>
+            <div class="form-group">
+              <label for="exampleInputFile" class="bmd-label-floating">Star Pic From Computer</label>
+              <input type="file" class="form-control-file" id="exampleInputFile">
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button id="submitAddComment" type="button" class="btn btn-primary" data-dismiss="modal">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
