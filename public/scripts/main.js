@@ -413,6 +413,10 @@ rhit.MainPageController = class {
 			// TODO: storageSession pass in save and like state
 			window.location.href = "/comment.html";
 		}
+
+		document.querySelector("#personalBtn").onclick = (event) => {
+			window.location.href = "/personal.html";
+		}
 	}
 }
 
@@ -465,6 +469,124 @@ rhit.CommentPageController = class {
 	}
 }
 
+rhit.PersonalPageController = class {
+	constructor() {
+		document.querySelector("#username").innerHTML = firebase.auth().currentUser.displayName;
+
+		document.querySelector("#profileBtn").onclick = (event) => {
+			window.location.href = "/update.html";
+		}
+
+		document.querySelector("#postsBtn").onclick = (event) => {
+
+		}
+
+		document.querySelector("#followingBtn").onclick = (event) => {
+
+		}
+	}
+}
+
+rhit.UpdatePageController = class {
+	constructor() {
+		const inputEmailEl = document.querySelector("#emailInput");
+		const inputPasswordEl = document.querySelector("#pwInput");
+		const inputUsernameEl = document.querySelector("#usernameInput");
+
+		document.querySelector("#backBtn").onclick = (event) => {
+			window.location.href = "/personal.html";
+		}
+
+		document.querySelector("#updateBtn").onclick = (event) => {
+			var user = firebase.auth().currentUser;
+			//update email
+			if (inputEmailEl.value == user.email) {
+				alert("This is current Email");
+			} else if (inputEmailEl.value != "") {
+				user.updateEmail(inputEmailEl.value).then(function () {
+					alert("Email updated");
+				}).catch(function (error) {
+					let errorCode = error.code;
+					let errorMessage = error.message;
+					console.log("create account error", errorCode, errorMessage);
+					switch (errorCode) {
+						case "auth/invalid-email":
+							alert("The email address is badly formatted");
+							break;
+						case "auth/weak-password":
+							alert("Password should be at least 6 characters");
+							break;
+						case "auth/email-already-in-use":
+							alert("This email has already been registered");
+							break;
+						case "auth/requires-recent-login":
+							alert("This operation is sensitive and requires recent Login again before retrying this request");
+							break;
+						default:
+							alert("An error occured");
+							break;
+					}
+					return;
+				});
+			}
+
+			//update password
+			if (inputPasswordEl.value != "") {
+				user.updatePassword(inputPasswordEl.value).then(function () {
+					alert("password updated");
+				}).catch(function (error) {
+					let errorCode = error.code;
+					let errorMessage = error.message;
+					switch (errorCode) {
+						case "auth/invalid-email":
+							alert("The email address is badly formatted");
+							break;
+						case "auth/weak-password":
+							alert("Password should be at least 6 characters");
+							break;
+						case "auth/email-already-in-use":
+							alert("This email has already been registered");
+							break;
+						case "auth/requires-recent-login":
+							alert("This operation is sensitive and requires recent Login again before retrying this request");
+							break;
+						default:
+							alert("An error occured");
+							break;
+					}
+					return;
+				});
+			}
+
+			//update username
+			if (`@${inputUsernameEl.value}` == user.displayName) {
+				alert("This is current Username");
+			} else if (inputUsernameEl.value.includes(" ")) {
+				alert("Username not valid");
+			} else if (inputUsernameEl.value == "") {} else {
+				user.updateProfile({
+					displayName: `@${inputUsernameEl.value}`
+				}).then(function () {
+					alert("Username updated");
+					console.log("new username: ", user.displayName);
+				}).catch(function (error) {
+					console.log(error);
+					switch (error) {
+						default:
+							alert("An error occured");
+							break;
+					}
+					return;
+				});
+			}
+
+			document.querySelector("#emailInput").value = "";
+			document.querySelector("#pwInput").value = "";
+			document.querySelector("#usernameInput").value = "";
+		}
+	}
+}
+
 rhit.initPage = function () {
 	// login page
 	if (document.querySelector("#loginPage")) {
@@ -496,6 +618,16 @@ rhit.initPage = function () {
 		console.log("You are on comment page");
 		new rhit.CommentPageController;
 	}
+
+	if (document.querySelector("#personalPage")) {
+		console.log("You are on personal page");
+		new rhit.PersonalPageController;
+	}
+
+	if (document.querySelector("#updatePage")) {
+		console.log("You are on update page");
+		new rhit.UpdatePageController;
+	}
 }
 
 rhit.checkForRedirects = function () {
@@ -504,9 +636,9 @@ rhit.checkForRedirects = function () {
 		window.location.href = "/main.html";
 	}
 
-	if (!document.querySelector("#loginPage") && !rhit.fbAuthManager.isSignedIn) {
+	if (!document.querySelector("#loginPage") && !document.querySelector("#resetpasswordPage") && !document.querySelector("#signupPage") && !rhit.fbAuthManager.isSignedIn) {
 		//TODO: list to be replaced with main page
-		// window.location.href = "/index.html";
+		window.location.href = "/index.html";
 	}
 }
 

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MyStarCollection</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://fonts.googleapis.com/css?family=Ruda' rel='stylesheet'>
+    <link rel="stylesheet" href="styles/update.css">
+</head>
+
+<body>
+    <style>
+        body {
+            font-family: 'Ruda';
+        }
+    </style>
+        <h4 id="backBtn"><i class="fas fa-chevron-left"></i></i></h4>
+    <form id="updatePage" action="" class="form">
+        <h1>MyStar</h1>
+        <h1>Collection</h1>
+        <div class="input">
+            <div id="username" class="inputBox">
+                <h2 id="usernameTxt" for="username">Username</h2>
+                <input id="usernameInput" type="text" name="username" placeholder="@Username" required>
+            </div>
+            <div id="email" class="inputBox">
+                <h2 id="emailTxt" for="username">Email</h2>
+                <input id="emailInput" type="text" name="username" placeholder="Email" required>
+            </div>
+            <div class="inputBox">
+                <h2 id="pwTxt" for="password">Password</h2>
+                <input id="pwInput" type="password" name="password" placeholder="Password" required>
+            </div>
+            <div id="updateBtn" class="inputBox">
+                <input id="signupBtnTxt" type="button" value="Update">
+            </div>
+        </div>
+    </form>
+    <script src="scripts/jquery.min.js"></script>
+    <script src="scripts/popper.js"></script>
+    <script src="scripts/bootstrap-material-design.js"></script>
+    <script>
+        $("body").bootstrapMaterialDesign();
+    </script>
+    <script src="/__/firebase/7.18.0/firebase-app.js"></script>
+    <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
+    <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
+    <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
+    <script src="/__/firebase/init.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+
+</html>

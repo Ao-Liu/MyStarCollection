@@ -155,7 +155,7 @@ h1 {
     color: white;
     text-align: left;
     overflow: auto;
-    height: 200px;
+    height: 30vh;
 }
 
 body {
@@ -187,7 +187,7 @@ ul li {
 
 ul li a {
     display: block;
-    width: 50px;
+    width: 200px;
     height: 50px;
     background: #18191f;
     line-height: 55px;
@@ -208,22 +208,18 @@ ul li a:hover .fas {
 }
 
 ul li:nth-child(1) a:hover .fas {
-    color: #CC000A;
-}
-
-ul li:nth-child(2) a:hover .fas {
-    color: #F2E822;
-}
-
-ul li:nth-child(3) a:hover .fas {
-    color: #1c7dd5;
-}
-
-ul li:nth-child(4) a:hover .fas {
     color: #4cd137;
 }
 
-#starTitle {
+ul li:nth-child(2) a:hover .fas {
+    color: #1c7dd5;
+}
+
+ul li:nth-child(3) a:hover .fas {
+    color: #F2E822;
+}
+
+#username {
     text-align: center;
 }
 
@@ -246,6 +242,25 @@ ul li:nth-child(4) a:hover .fas {
 }
 
 @media (min-width:200px) {
+    ul li a {
+        display: block;
+        width: 120px;
+        height: 50px;
+        background: #18191f;
+        line-height: 55px;
+        text-align: center;
+        margin: 0 10px;
+        border-radius: 15px;
+        box-shadow: -2px -2px 3px rgba(255, 255, 255, 0.05), 3px 3px 3px rgba(0, 0, 0, 0.2);
+        transition: all .2s ease-in-out;
+    }
+
+    ul li a .fas {
+        font-size: 0.9em;
+        color: #555;
+        padding-bottom: 30px;
+    }
+
     #starPic {
         height: 300px;
         width: 300px;
@@ -256,7 +271,7 @@ ul li:nth-child(4) a:hover .fas {
         justify-content: center;
     }
 
-    #starTitle {
+    #username {
         font-size: 2em;
     }
 
@@ -274,6 +289,25 @@ ul li:nth-child(4) a:hover .fas {
 }
 
 @media (min-width:880px) {
+    ul li a {
+        display: block;
+        width: 130px;
+        height: 50px;
+        background: #18191f;
+        line-height: 55px;
+        text-align: center;
+        margin: 0 10px;
+        border-radius: 15px;
+        box-shadow: -2px -2px 3px rgba(255, 255, 255, 0.05), 3px 3px 3px rgba(0, 0, 0, 0.2);
+        transition: all .2s ease-in-out;
+        font-size: 0.8em;
+    }
+
+    ul li a .fas {
+        font-size: 1.2em;
+        color: #555;
+    }
+
     #starPic {
         height: 400px;
         width: 400px;
@@ -298,6 +332,24 @@ ul li:nth-child(4) a:hover .fas {
 }
 
 @media (min-width:1130px) {
+    ul li a {
+        display: block;
+        width: 170px;
+        height: 50px;
+        background: #18191f;
+        line-height: 55px;
+        text-align: center;
+        margin: 0 10px;
+        border-radius: 15px;
+        box-shadow: -2px -2px 3px rgba(255, 255, 255, 0.05), 3px 3px 3px rgba(0, 0, 0, 0.2);
+        transition: all .2s ease-in-out;
+    }
+
+    ul li a .fas {
+        font-size: 1.5em;
+        color: #555;
+    }
+
     #starPic {
         height: 480px;
         width: 480px;
@@ -308,7 +360,7 @@ ul li:nth-child(4) a:hover .fas {
         justify-content: center;
     }
 
-    #starTitle {
+    #username {
         font-size: 4em;
         margin-top: 2vh;
     }
