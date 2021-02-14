@@ -6,7 +6,7 @@
 }
 
 body {
-    min-height: 95vh;
+    min-height: 105vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -216,6 +216,14 @@ ul li:nth-child(4) a:hover .fas {
     line-height: 40px;
 }
 
+#nextBtn {
+    bottom: 10px;
+    color: white;
+    position: fixed;
+    right: 20px;
+    z-index: 999;
+}
+
 @media (min-width:200px){
     #starPic {
         height: 200px;
@@ -232,12 +240,12 @@ ul li:nth-child(4) a:hover .fas {
     }
 
     #starDes {
-        font-size: 1.3em;
+        font-size: 1em;
     }
 
     #caption {
-        padding-top: 30px;
-        padding-bottom: 0;
+        padding-top: 20px;
+        padding-bottom: 0px;
     }
 }
 
@@ -254,7 +262,11 @@ ul li:nth-child(4) a:hover .fas {
     }
 
     #starDes {
-        font-size: 1.5em;
+        font-size: 1.3em;
+    }
+
+    #starTitle {
+        font-size: 3em;
     }
 
     #caption {
@@ -265,7 +277,7 @@ ul li:nth-child(4) a:hover .fas {
 
 @media (min-width:1130px){
     #starPic {
-        margin-right: 10vw;
+        margin-right: 7vw;
         height: 480px;
         width: 480px;
     }

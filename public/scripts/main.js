@@ -601,6 +601,23 @@ rhit.FollowingPageController = class {
 		document.querySelector("#backBtn").onclick = (event) => {
 			window.location.href = "/personal.html";
 		}
+
+		document.querySelector("#unfollowBtn").onclick = (event) => {
+			let e = document.getElementById('unfollowBtn');
+			console.log(e.style.background);
+			let username = document.querySelector("#username").innerHTML;
+			if (e.classList.contains('fa-user-times')) {
+				e.classList.remove('fa-user-times');
+				e.classList.add('fa-user-plus');
+				e.innerHTML = "&nbsp;Follow";
+				alert(`You have unfollowed ${username}`);
+			} else {
+				e.classList.remove('fa-user-plus');
+				e.classList.add('fa-user-times');
+				e.innerHTML = "&nbsp;Unfollow";
+				alert(`You are following ${username}`);
+			}
+		}
 	}
 }
 
@@ -624,7 +641,25 @@ rhit.MyPostsPageController = class {
 rhit.OtherUserPageController = class {
 	constructor() {
 		document.querySelector("#backBtn").onclick = (event) => {
-			window.location.href = "/personal.html";
+			// window.location.href = "/personal.html";
+			window.location.href = "/following.html";
+		}
+
+		document.querySelector("#unfollowBtn").onclick = (event) => {
+			let e = document.getElementById('unfollowBtn');
+			console.log(e.style.background);
+			let username = document.querySelector("#username").innerHTML;
+			if (e.classList.contains('fa-user-times')) {
+				e.classList.remove('fa-user-times');
+				e.classList.add('fa-user-plus');
+				e.innerHTML = "&nbsp;Follow";
+				alert(`You have unfollowed ${username}`);
+			} else {
+				e.classList.remove('fa-user-plus');
+				e.classList.add('fa-user-times');
+				e.innerHTML = "&nbsp;Unfollow";
+				alert(`You are following ${username}`);
+			}
 		}
 	}
 }
