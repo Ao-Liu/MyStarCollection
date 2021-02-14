@@ -129,3 +129,6 @@ h1 {
     top: 30px;
 }
 
+*, :after, :before {
+    box-sizing: border-box;
+}

@@ -477,12 +477,16 @@ rhit.PersonalPageController = class {
 			window.location.href = "/update.html";
 		}
 
-		document.querySelector("#postsBtn").onclick = (event) => {
+		document.querySelector("#backBtn").onclick = (event) => {
+			window.location.href = "/main.html";
+		}
 
+		document.querySelector("#myPostsBtn").onclick = (event) => {
+			
 		}
 
 		document.querySelector("#followingBtn").onclick = (event) => {
-
+			window.location.href = "/following.html";
 		}
 	}
 }
@@ -587,6 +591,14 @@ rhit.UpdatePageController = class {
 	}
 }
 
+rhit.FollowingPageController = class {
+	constructor() {
+		document.querySelector("#backBtn").onclick = (event) => {
+			window.location.href = "/personal.html";
+		}
+	}
+}
+
 rhit.initPage = function () {
 	// login page
 	if (document.querySelector("#loginPage")) {
@@ -624,9 +636,9 @@ rhit.initPage = function () {
 		new rhit.PersonalPageController;
 	}
 
-	if (document.querySelector("#updatePage")) {
-		console.log("You are on update page");
-		new rhit.UpdatePageController;
+	if (document.querySelector("#followingPage")) {
+		console.log("You are on following page");
+		new rhit.FollowingPageController;
 	}
 }
 

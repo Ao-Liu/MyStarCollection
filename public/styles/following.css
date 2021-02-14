@@ -1,0 +1,40 @@
+body {
+    background: #131419;
+}
+
+.page-container {
+    margin-top: 75px;
+}
+
+.card {
+    margin: 10px 0;
+    color: #EDC03C;
+    background: #131419;
+}
+
+#listPage .card-title,
+#listPage .card-subtitle{
+    white-space: nowrap;
+    overflow: hidden;
+    display: block;
+    text-overflow: ellipsis;
+}
+
+hr {
+    background: #EDC03C;
+}
+
+#followingTitle {
+    text-align: center;
+    color: #EDC03C;
+    font-size: 50px;
+    margin-top: 50px;
+}
+
+#backBtn {
+    left: 30px;
+    color: white;
+    position: fixed;
+    z-index: 999;
+    top: 30px;
+}
