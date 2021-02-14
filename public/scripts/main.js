@@ -417,6 +417,10 @@ rhit.MainPageController = class {
 		document.querySelector("#personalBtn").onclick = (event) => {
 			window.location.href = "/personal.html";
 		}
+
+		document.querySelector("#shareBtn").onclick = (event) => {
+			window.location.href = "/share.html";
+		}
 	}
 }
 
@@ -482,11 +486,12 @@ rhit.PersonalPageController = class {
 		}
 
 		document.querySelector("#myPostsBtn").onclick = (event) => {
-			
+			window.location.href = "/myposts.html";
 		}
 
 		document.querySelector("#followingBtn").onclick = (event) => {
-			window.location.href = "/following.html";
+			// window.location.href = "/following.html";
+			window.location.href = "/otheruser.html";
 		}
 	}
 }
@@ -599,6 +604,31 @@ rhit.FollowingPageController = class {
 	}
 }
 
+
+rhit.SharePageController = class {
+	constructor() {
+		document.querySelector("#backBtn").onclick = (event) => {
+			window.location.href = "/main.html";
+		}
+	}
+}
+
+rhit.MyPostsPageController = class {
+	constructor() {
+		document.querySelector("#backBtn").onclick = (event) => {
+			window.location.href = "/personal.html";
+		}
+	}
+}
+
+rhit.OtherUserPageController = class {
+	constructor() {
+		document.querySelector("#backBtn").onclick = (event) => {
+			window.location.href = "/personal.html";
+		}
+	}
+}
+
 rhit.initPage = function () {
 	// login page
 	if (document.querySelector("#loginPage")) {
@@ -631,6 +661,11 @@ rhit.initPage = function () {
 		new rhit.CommentPageController;
 	}
 
+	if (document.querySelector("#updatePage")) {
+		console.log("You are on update page");
+		new rhit.UpdatePageController;
+	}
+
 	if (document.querySelector("#personalPage")) {
 		console.log("You are on personal page");
 		new rhit.PersonalPageController;
@@ -639,6 +674,21 @@ rhit.initPage = function () {
 	if (document.querySelector("#followingPage")) {
 		console.log("You are on following page");
 		new rhit.FollowingPageController;
+	}
+
+	if (document.querySelector("#sharePage")) {
+		console.log("You are on share page");
+		new rhit.SharePageController;
+	}
+
+	if (document.querySelector("#myPostsPage")) {
+		console.log("You are on myposts page");
+		new rhit.MyPostsPageController;
+	}
+
+	if (document.querySelector("#otherUserPage")) {
+		console.log("You are on other user page");
+		new rhit.OtherUserPageController;
 	}
 }
 

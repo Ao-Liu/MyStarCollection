@@ -187,7 +187,7 @@ ul li {
 
 ul li a {
     display: block;
-    width: 200px;
+    width: 400px;
     height: 50px;
     background: #18191f;
     line-height: 55px;
@@ -208,15 +208,7 @@ ul li a:hover .fas {
 }
 
 ul li:nth-child(1) a:hover .fas {
-    color: #4cd137;
-}
-
-ul li:nth-child(2) a:hover .fas {
-    color: #1c7dd5;
-}
-
-ul li:nth-child(3) a:hover .fas {
-    color: #F2E822;
+    color: #CC000A;
 }
 
 #username {
@@ -244,7 +236,7 @@ ul li:nth-child(3) a:hover .fas {
 @media (min-width:200px) {
     ul li a {
         display: block;
-        width: 120px;
+        width: 150px;
         height: 50px;
         background: #18191f;
         line-height: 55px;
@@ -287,7 +279,7 @@ ul li:nth-child(3) a:hover .fas {
 @media (min-width:880px) {
     ul li a {
         display: block;
-        width: 130px;
+        width: 170px;
         height: 50px;
         background: #18191f;
         line-height: 55px;
@@ -330,7 +322,7 @@ ul li:nth-child(3) a:hover .fas {
 @media (min-width:1130px) {
     ul li a {
         display: block;
-        width: 170px;
+        width: 270px;
         height: 50px;
         background: #18191f;
         line-height: 55px;
