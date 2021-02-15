@@ -19,6 +19,7 @@ rhit.FB_KEY_SAVEDBY = "SavedBy"; //?
 rhit.CURRENT_USER = null;
 rhit.fbAuthManager = null;
 rhit.fbStarsManager = null;
+rhit.fbSingleStarManager = null;
 
 //Util classes
 function htmlToElement(html) {
@@ -106,6 +107,19 @@ rhit.base64 = class { // for encoding and decoding password
 	};
 }
 
+Array.prototype.remove = function () {
+	var what, a = arguments,
+		L = a.length,
+		ax;
+	while (L && this.length) {
+		what = a[--L];
+		while ((ax = this.indexOf(what)) !== -1) {
+			this.splice(ax, 1);
+		}
+	}
+	return this;
+};
+
 // Data model classes
 rhit.User = class {
 	// constructor(username, password) {
@@ -123,13 +137,13 @@ rhit.User = class {
 }
 
 rhit.Post = class {
-	constructor(pid, postBy, pic, title, des) {
+	constructor(pid, postBy, title, des, pic, likedBy) {
 		this._pid = pid;
 		this._postBy = postBy;
-		this._pic = pic;
 		this._title = title;
 		this._des = des;
-		this._likedBy = [];
+		this._pic = pic;
+		this._likedBy = likedBy;
 		this._savedBy = [];
 		this._comments = [];
 	}
@@ -194,7 +208,7 @@ rhit.FbStarsManager = class {
 				[rhit.FB_KEY_TITLE]: title,
 				[rhit.FB_KEY_DES]: description,
 				[rhit.FB_KEY_PIC]: pic,
-				[rhit.FB_KEY_POSTBY]: rhit.fbAuthManager.uid,
+				[rhit.FB_KEY_POSTBY]: rhit.fbAuthManager._user.displayName,
 				[rhit.FB_KEY_POSTTIME]: firebase.firestore.Timestamp.now(),
 				[rhit.FB_KEY_COMMENTS]: [],
 				[rhit.FB_KEY_LIKEDBY]: [],
@@ -210,6 +224,24 @@ rhit.FbStarsManager = class {
 			});
 	}
 
+	getStarPostAtIndex(index) {
+		if (index >= this._documentSnapshots.length) {
+			index = 0;
+		}
+		const docSnapshot = this._documentSnapshots[index];
+		console.log(docSnapshot.get(rhit.FB_KEY_LIKEDBY));
+		const post = new rhit.Post(
+			docSnapshot.id,
+			docSnapshot.get(rhit.FB_KEY_POSTBY),
+			docSnapshot.get(rhit.FB_KEY_TITLE),
+			docSnapshot.get(rhit.FB_KEY_DES),
+			docSnapshot.get(rhit.FB_KEY_PIC),
+			docSnapshot.get(rhit.FB_KEY_LIKEDBY)
+			//TODO: other fields
+		);
+		return post;
+	}
+
 	beginListening(changeListener) {
 		let query = this._ref.orderBy(rhit.FB_KEY_POSTTIME, "desc").limit(50);
 		if (this._uid) {
@@ -223,21 +255,24 @@ rhit.FbStarsManager = class {
 			});
 	}
 
-	stopListeneing() {
+	updateLikedBy(postId, likedBy) {
+		this._ref.doc(postId).update({
+				[rhit.FB_KEY_LIKEDBY]: likedBy
+			})
+			.then(() => {
+				console.log("update likedBy success");
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
+	stopListening() {
 		this._unsusubscribe();
 	}
 
 	get length() {
 		return this._documentSnapshots.length;
-	}
-
-	getStarPostAtIndex(index) {
-		const docSnapshot = this._documentSnapshots[index];
-		const mq = new rhit.MovieQuote(docSnapshot.id,
-			docSnapshot.get(rhit.FB_KEY_QUOTE),
-			docSnapshot.get(rhit.FB_KEY_MOVIE)
-		);
-		return mq;
 	}
 }
 
@@ -426,17 +461,25 @@ rhit.WelcomePageController = class {
 
 rhit.MainPageController = class {
 	constructor() {
-		// var storage = firebase.storage();
-		// var pathReference = storage.ref('images/neptune.jpg');
+		this.index = 0;
+
+		this.curPost = null;
+
+		rhit.fbStarsManager.beginListening(this.updateView.bind(this));
 
 		document.querySelector("#likeBtn").onclick = (event) => {
-			const color = document.querySelector("#likeBtn").style.color;
-			if (color == "rgb(204, 0, 10)") {
-				document.querySelector("#likeBtn").style.color = "#555";
+			const username = rhit.fbAuthManager._user.displayName;
+			let likedByArr = this.curPost._likedBy;
+			if (!likedByArr.includes(username)) {
+				likedByArr.push(username);
+				console.log("this liked by", likedByArr);
+				rhit.fbStarsManager.updateLikedBy(this.curPost._pid, likedByArr);
 			} else {
-				document.querySelector("#likeBtn").style.color = "#CC000A";
+				likedByArr.remove(username);
+				console.log("this liked by", likedByArr);
+				rhit.fbStarsManager.updateLikedBy(this.curPost._pid, likedByArr);
 			}
-			console.log(color);
+			this.updateView();
 		}
 
 		document.querySelector("#saveBtn").onclick = (event) => {
@@ -505,10 +548,53 @@ rhit.MainPageController = class {
 			} else if (uploadPic == undefined) {
 				rhit.fbStarsManager.add(title, des, inputUrl);
 			} else {
-				alert("Please either add an url or upload a image");
+				alert("Please either add an url or upload an image");
 				return;
 			}
 		}
+
+		document.querySelector("#nextBtn").onclick = (event) => {
+			console.log("nextBtn onclick");
+			this.index++;
+			if (this.index >= rhit.fbStarsManager.length) {
+				this.index = 0;
+			}
+			this.updateView();
+		}
+	}
+
+	swapLikedByColor() {
+		const color = document.querySelector("#likeBtn").style.color;
+		if (color == "rgb(204, 0, 10)") {
+			document.querySelector("#likeBtn").style.color = "#555";
+		} else {
+			document.querySelector("#likeBtn").style.color = "#CC000A";
+		}
+	}
+
+	updateView() {
+		this.curPost = rhit.fbStarsManager.getStarPostAtIndex(this.index);
+		if (this.curPost == null || this.curPost == undefined) {
+			alert("Error occured!");
+			return;
+		}
+		// post basic info
+		document.querySelector("#author").innerHTML = this.curPost._postBy + "&nbsp;&nbsp;";
+		document.querySelector("#starPic").src = this.curPost._pic;
+		document.querySelector("#starTitle").innerHTML = this.curPost._title;
+		document.querySelector("#starDes").innerHTML = this.curPost._des;
+
+		// like btn
+		const username = rhit.fbAuthManager._user.displayName;
+		let likedByArr = this.curPost._likedBy;
+		if (likedByArr.includes(username)) {
+			document.querySelector("#likeBtn").style.color = "#CC000A";
+		} else {
+			document.querySelector("#likeBtn").style.color = "#555";
+		}
+
+		// save btn
+		
 	}
 }
 
