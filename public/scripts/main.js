@@ -1,9 +1,11 @@
 var rhit = rhit || {};
 rhit.BASE64 = null;
 // User
-rhit.FB_KEY_USER = "User";
-rhit.FB_KEY_USERNAME = "Username";
-rhit.FB_KEY_PASSWORD = "Password";
+rhit.FB_COLLECTION_USER = "User";
+rhit.FB_KEY_UID = "uid";
+rhit.FB_KEY_STARCOLLECTIONS = "StarCollections";
+rhit.FB_KEY_POSTS = "Posts";
+rhit.FB_KEY_FOLLOWING = "Following";
 
 // Post
 rhit.FB_COLLECTION_POST = "Post"
@@ -19,7 +21,7 @@ rhit.FB_KEY_SAVEDBY = "SavedBy"; //?
 rhit.CURRENT_USER = null;
 rhit.fbAuthManager = null;
 rhit.fbStarsManager = null;
-rhit.fbSingleStarManager = null;
+rhit.fbUserProfileManager = null;
 
 //Util classes
 function htmlToElement(html) {
@@ -170,6 +172,7 @@ rhit.FbAuthManager = class {
 	constructor() {
 		this._user = null;
 		console.log("You have created fbAuthManager");
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USER);
 	}
 
 	beginListening(changeListener) {
@@ -193,6 +196,62 @@ rhit.FbAuthManager = class {
 	get uid() {
 		return this._user.uid;
 	}
+}
+
+rhit.FbUserProfileManager = class {
+	constructor(uid) {
+		this._documentSnapshot = {};
+		this._unsubscribe = null;
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USER).doc(uid);
+		console.log(`listening to ${uid}`);
+	}
+
+	beginListening(changeListener) {
+		this._unsubscribe = this._ref.onSnapshot((doc) => {
+			if (doc.exists) {
+				console.log("Document data:", doc.data());
+				this._documentSnapshot = doc;
+				changeListener();
+			} else {
+				console.log("No such document!");
+			}
+		});
+	}
+
+	stopListening() {
+		this._unsubscribe();
+	}
+
+	// update(quote, movie) {
+	// 	this._ref.update({
+	// 			[rhit.FB_KEY_QUOTE]: quote,
+	// 			[rhit.FB_KEY_MOVIE]: movie,
+	// 			[rhit.FB_KEY_AUTHOR]: rhit.fbAuthManager.firestore.uid,
+	// 			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now()
+	// 		})
+	// 		.then(() => {
+	// 			console.log(docRef.id);
+	// 		})
+	// 		.catch((error) => {
+	// 			console.log(error);
+	// 		});
+	// }
+
+	// delete() {
+	// 	return this._ref.delete();
+	// }
+
+	// get quote() {
+	// 	return this._documentSnapshot.get(rhit.FB_KEY_QUOTE);
+	// }
+
+	// get movie() {
+	// 	return this._documentSnapshot.get(rhit.FB_KEY_MOVIE);
+	// }
+
+	// get author() {
+	// 	return this._documentSnapshot.get(rhit.FB_KEY_AUTHOR);
+	// }
 }
 
 rhit.FbStarsManager = class {
@@ -358,12 +417,25 @@ rhit.SignUpPageController = class {
 			firebase.auth().createUserWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value).then((params) => {
 					alert("Welcome to MyStarCollection!");
 					var user = firebase.auth().currentUser;
+
 					//set username
 					user.updateProfile({
 						displayName: `@${inputUsernameEl.value}`,
 					}).then(function () {
-						console.log("new username: ", user.displayName);
-						console.log("new uid: ", user.uid);
+
+						firebase.firestore().collection(rhit.FB_COLLECTION_USER).doc(user.uid).set({
+							[rhit.FB_KEY_FOLLOWING]: [],
+							[rhit.FB_KEY_POSTS]: [],
+							[rhit.FB_KEY_STARCOLLECTIONS]: [],
+						})
+						.then(function() {
+							console.log("User profile successfully written!");
+							window.location.href = "/welcome.html";
+						})
+						.catch(function(error) {
+							console.error("Error writing user profile: ", error);
+						});
+
 					}).catch(function (error) {
 						console.log(error);
 						switch (error) {
@@ -373,7 +445,6 @@ rhit.SignUpPageController = class {
 						}
 						return;
 					});
-					window.location.href = "/welcome.html";
 				})
 				.catch((error) => {
 					let errorCode = error.code;
@@ -594,7 +665,7 @@ rhit.MainPageController = class {
 		}
 
 		// save btn
-		
+
 	}
 }
 
@@ -867,6 +938,7 @@ rhit.initPage = function () {
 		const uid = urlParams.get(`uid`);
 		console.log("uid", uid);
 		rhit.fbStarsManager = new rhit.FbStarsManager(uid);
+		rhit.fbUserProfileManager = new rhit.FbUserProfileManager(firebase.auth().currentUser.uid);
 		new rhit.MainPageController;
 	}
 
