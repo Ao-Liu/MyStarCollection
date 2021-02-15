@@ -1,12 +1,24 @@
 var rhit = rhit || {};
 rhit.BASE64 = null;
+// User
 rhit.FB_KEY_USER = "User";
 rhit.FB_KEY_USERNAME = "Username";
 rhit.FB_KEY_PASSWORD = "Password";
+
+// Post
+rhit.FB_COLLECTION_POST = "Post"
+rhit.FB_KEY_TITLE = "Title";
+rhit.FB_KEY_DES = "Description";
+rhit.FB_KEY_PIC = "Pic";
+rhit.FB_KEY_POSTBY = "PostBy";
+rhit.FB_KEY_POSTTIME = "PostTime";
+rhit.FB_KEY_COMMENTS = "Comments";
+rhit.FB_KEY_LIKEDBY = "LikedBy"; //?
+rhit.FB_KEY_SAVEDBY = "SavedBy"; //?
+
 rhit.CURRENT_USER = null;
-
 rhit.fbAuthManager = null;
-
+rhit.fbStarsManager = null;
 
 //Util classes
 function htmlToElement(html) {
@@ -94,7 +106,6 @@ rhit.base64 = class { // for encoding and decoding password
 	};
 }
 
-
 // Data model classes
 rhit.User = class {
 	// constructor(username, password) {
@@ -151,26 +162,7 @@ rhit.FbAuthManager = class {
 		firebase.auth().onAuthStateChanged((user) => {
 			this._user = user;
 			changeListener();
-		});
-	}
-
-	signIn() {
-		Rosefire.signIn("dd1837bc-1867-4576-9f8f-240dab5f4940", (err, rfUser) => {
-			if (err) {
-				console.log("Rosefire error!", err);
-				return;
-			}
-			console.log("Rosefire success!", rfUser);
-			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
-				const errorCode = error.code;
-				const errorMessage = error.message;
-				if (errorCode == 'auth/invalid-custom-token') {
-					alert("invalild token");
-				} else {
-					console.error("auth error", errorCode, errorMessage);
-				}
-			});
-			console.log(`isSingedIn: ${rhit.fbAuthManager.isSignedIn}`);
+			console.log("user", this._user);
 		});
 	}
 
@@ -186,6 +178,66 @@ rhit.FbAuthManager = class {
 
 	get uid() {
 		return this._user.uid;
+	}
+}
+
+rhit.FbStarsManager = class {
+	constructor(uid) {
+		this._uid = uid;
+		this._documentSnapshots = [];
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_POST);
+		this._unsusubscribe = null;
+	}
+
+	add(title, description, pic) {
+		this._ref.add({
+				[rhit.FB_KEY_TITLE]: title,
+				[rhit.FB_KEY_DES]: description,
+				[rhit.FB_KEY_PIC]: pic,
+				[rhit.FB_KEY_POSTBY]: rhit.fbAuthManager.uid,
+				[rhit.FB_KEY_POSTTIME]: firebase.firestore.Timestamp.now(),
+				[rhit.FB_KEY_COMMENTS]: [],
+				[rhit.FB_KEY_LIKEDBY]: [],
+				[rhit.FB_KEY_SAVEDBY]: []
+			})
+			.then(function (docRef) {
+				console.log(docRef.id);
+				alert("Post Successful!");
+			})
+			.catch(function (error) {
+				console.log(error);
+				alert("Post Error ", error);
+			});
+	}
+
+	beginListening(changeListener) {
+		let query = this._ref.orderBy(rhit.FB_KEY_POSTTIME, "desc").limit(50);
+		if (this._uid) {
+			query = query.where(rhit.FB_KEY_POSTBY, "==", this._uid);
+		}
+
+		this._unsusubscribe = query
+			.onSnapshot((querySnapshot) => {
+				this._documentSnapshots = querySnapshot.docs;
+				changeListener();
+			});
+	}
+
+	stopListeneing() {
+		this._unsusubscribe();
+	}
+
+	get length() {
+		return this._documentSnapshots.length;
+	}
+
+	getStarPostAtIndex(index) {
+		const docSnapshot = this._documentSnapshots[index];
+		const mq = new rhit.MovieQuote(docSnapshot.id,
+			docSnapshot.get(rhit.FB_KEY_QUOTE),
+			docSnapshot.get(rhit.FB_KEY_MOVIE)
+		);
+		return mq;
 	}
 }
 
@@ -271,10 +323,12 @@ rhit.SignUpPageController = class {
 			firebase.auth().createUserWithEmailAndPassword(inputEmailEl.value, inputPasswordEl.value).then((params) => {
 					alert("Welcome to MyStarCollection!");
 					var user = firebase.auth().currentUser;
+					//set username
 					user.updateProfile({
-						displayName: `@${inputUsernameEl.value}`
+						displayName: `@${inputUsernameEl.value}`,
 					}).then(function () {
 						console.log("new username: ", user.displayName);
+						console.log("new uid: ", user.uid);
 					}).catch(function (error) {
 						console.log(error);
 						switch (error) {
@@ -372,6 +426,9 @@ rhit.WelcomePageController = class {
 
 rhit.MainPageController = class {
 	constructor() {
+		// var storage = firebase.storage();
+		// var pathReference = storage.ref('images/neptune.jpg');
+
 		document.querySelector("#likeBtn").onclick = (event) => {
 			const color = document.querySelector("#likeBtn").style.color;
 			if (color == "rgb(204, 0, 10)") {
@@ -420,6 +477,37 @@ rhit.MainPageController = class {
 
 		document.querySelector("#shareBtn").onclick = (event) => {
 			window.location.href = "/share.html";
+		}
+
+		document.querySelector("#submitAddStar").onclick = (event) => {
+			const title = document.querySelector("#inputStarName").value;
+			const des = document.querySelector("#inputStarDes").value;
+			const inputUrl = document.querySelector("#inputStarUrl").value;
+			const uploadPic = document.querySelector("#inputStarUploadPic").files[0];
+
+			if (inputUrl == "") {
+				//upload picture
+				const ref = firebase.storage().ref();
+				const file = document.querySelector("#inputStarUploadPic").files[0];
+				const name = +new Date() + "-" + file.name;
+				const metadata = {
+					contentType: file.type
+				};
+				const task = ref.child(name).put(file, metadata);
+				task.then(snapshot => snapshot.ref.getDownloadURL())
+					.then(url => {
+						console.log(url);
+						rhit.fbStarsManager.add(title, des, url);
+					})
+					.catch((error) => {
+						console.log(error);
+					});
+			} else if (uploadPic == undefined) {
+				rhit.fbStarsManager.add(title, des, inputUrl);
+			} else {
+				alert("Please either add an url or upload a image");
+				return;
+			}
 		}
 	}
 }
@@ -476,6 +564,7 @@ rhit.CommentPageController = class {
 rhit.PersonalPageController = class {
 	constructor() {
 		document.querySelector("#username").innerHTML = firebase.auth().currentUser.displayName;
+		document.querySelector("#email").innerHTML = firebase.auth().currentUser.email;
 
 		document.querySelector("#profileBtn").onclick = (event) => {
 			window.location.href = "/update.html";
@@ -621,7 +710,6 @@ rhit.FollowingPageController = class {
 	}
 }
 
-
 rhit.SharePageController = class {
 	constructor() {
 		document.querySelector("#backBtn").onclick = (event) => {
@@ -665,6 +753,8 @@ rhit.OtherUserPageController = class {
 }
 
 rhit.initPage = function () {
+	const urlParams = new URLSearchParams(window.location.search);
+
 	// login page
 	if (document.querySelector("#loginPage")) {
 		console.log("You are on login page");
@@ -688,6 +778,9 @@ rhit.initPage = function () {
 
 	if (document.querySelector("#mainPage")) {
 		console.log("You are on main page");
+		const uid = urlParams.get(`uid`);
+		console.log("uid", uid);
+		rhit.fbStarsManager = new rhit.FbStarsManager(uid);
 		new rhit.MainPageController;
 	}
 
@@ -729,12 +822,14 @@ rhit.initPage = function () {
 
 rhit.checkForRedirects = function () {
 	if (document.querySelector("#loginPage") && rhit.fbAuthManager.isSignedIn) {
-		//TODO: list to be replaced with main page
 		window.location.href = "/main.html";
 	}
 
-	if (!document.querySelector("#loginPage") && !document.querySelector("#resetpasswordPage") && !document.querySelector("#signupPage") && !rhit.fbAuthManager.isSignedIn) {
-		//TODO: list to be replaced with main page
+	// if (rhit.fbAuthManager.isSignedIn) {
+	// 	window.location.href = "/main.html";
+	// }
+
+	if (!document.querySelector("#loginPage") && !document.querySelector("#resetPwPage") && !document.querySelector("#signupPage") && !rhit.fbAuthManager.isSignedIn) {
 		window.location.href = "/index.html";
 	}
 }
