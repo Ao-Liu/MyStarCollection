@@ -239,36 +239,9 @@ rhit.FbUserDataManager = class {
 		return userData;
 	}
 
-	// update(quote, movie) {
-	// 	this._ref.update({
-	// 			[rhit.FB_KEY_QUOTE]: quote,
-	// 			[rhit.FB_KEY_MOVIE]: movie,
-	// 			[rhit.FB_KEY_AUTHOR]: rhit.fbAuthManager.firestore.uid,
-	// 			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now()
-	// 		})
-	// 		.then(() => {
-	// 			console.log(docRef.id);
-	// 		})
-	// 		.catch((error) => {
-	// 			console.log(error);
-	// 		});
-	// }
-
-	// delete() {
-	// 	return this._ref.delete();
-	// }
-
 	get following() {
 		return this._documentSnapshot.get(rhit.FB_KEY_FOLLOWING);
 	}
-
-	// get movie() {
-	// 	return this._documentSnapshot.get(rhit.FB_KEY_MOVIE);
-	// }
-
-	// get author() {
-	// 	return this._documentSnapshot.get(rhit.FB_KEY_AUTHOR);
-	// }
 }
 
 rhit.FbStarsManager = class {
@@ -318,6 +291,71 @@ rhit.FbStarsManager = class {
 		return post;
 	}
 
+
+	getStarPostByPid(pid) {
+		let post = null;
+		for (let i = 0; i < this._documentSnapshots.length; i++) {
+			let docSnapshot = this._documentSnapshots[i];
+			if (docSnapshot.id == pid) {
+				post = new rhit.Post(
+					docSnapshot.id,
+					docSnapshot.get(rhit.FB_KEY_POSTBY),
+					docSnapshot.get(rhit.FB_KEY_TITLE),
+					docSnapshot.get(rhit.FB_KEY_DES),
+					docSnapshot.get(rhit.FB_KEY_PIC),
+					docSnapshot.get(rhit.FB_KEY_LIKEDBY),
+					docSnapshot.get(rhit.FB_KEY_SAVEDBY)
+					//TODO: other fields
+				);
+				break;
+			}
+		}
+		return post;
+	}
+
+	getStarPostIndexByPid(pid) {
+		let idx = null;
+		for (let i = 0; i < this._documentSnapshots.length; i++) {
+			let docSnapshot = this._documentSnapshots[i];
+			if (docSnapshot.id == pid) {
+				idx = i;
+				break;
+			}
+		}
+		return idx;
+	}
+
+	getStarPostByIndex(index) {
+		if (index >= this._documentSnapshots.length) {
+			index = 0;
+		}
+		const docSnapshot = this._documentSnapshots[index];
+		console.log(docSnapshot.id);
+		return this.getStarPostByPid(docSnapshot.id);
+	}
+
+	getMyStarCollections() {
+		let uid = firebase.auth().currentUser.uid;
+		let mscPosts = [];
+		for (let i = 0; i < this._documentSnapshots.length; i++) {
+			let docSnapshot = this._documentSnapshots[i];
+			const post = new rhit.Post(
+				docSnapshot.id,
+				docSnapshot.get(rhit.FB_KEY_POSTBY),
+				docSnapshot.get(rhit.FB_KEY_TITLE),
+				docSnapshot.get(rhit.FB_KEY_DES),
+				docSnapshot.get(rhit.FB_KEY_PIC),
+				docSnapshot.get(rhit.FB_KEY_LIKEDBY),
+				docSnapshot.get(rhit.FB_KEY_SAVEDBY)
+				//TODO: other fields
+			);
+			if (post._savedBy.includes(uid)) {
+				mscPosts.push(post);
+			}
+		}
+		return mscPosts;
+	}
+
 	beginListening(changeListener) {
 		let query = this._ref.orderBy(rhit.FB_KEY_POSTTIME, "desc").limit(50);
 		if (this._uid) {
@@ -327,6 +365,7 @@ rhit.FbStarsManager = class {
 		this._unsusubscribe = query
 			.onSnapshot((querySnapshot) => {
 				this._documentSnapshots = querySnapshot.docs;
+				console.log(this._documentSnapshots);
 				changeListener();
 			});
 	}
@@ -404,6 +443,7 @@ rhit.LoginPageController = class {
 				.then((event) => {
 					alert("Welcome Back!")
 					window.location.href = "/main.html";
+					// window.location.href = `/main.html`;
 				}).catch((error) => {
 					let errorCode = error.code;
 					let errorMessage = error.message;
@@ -555,45 +595,52 @@ rhit.WelcomePageController = class {
 
 		document.querySelector("#liftOffBtn").onclick = (event) => {
 			window.location.href = "/main.html";
+			// window.location.href = `/main.html?id=pQqxwBajWjdPe78B0Q1u`;
 		}
 	}
 }
 
 rhit.MainPageController = class {
 	constructor() {
-		this.index = 0;
-
 		this.curPost = null;
 		this.userData = null;
+		this.index = 0;
 
 		rhit.fbStarsManager.beginListening(this.updateView.bind(this));
 		rhit.fbUserDataManager.beginListening(this.updateView.bind(this));
-		
+
+		this._ssId = sessionStorage.getItem("postId");
+		if (this._ssId != undefined) {
+			console.log("ssid", this._ssId);
+			this.index = rhit.fbStarsManager.getStarPostIndexByPid(this._ssId);
+			console.log("ss idx", this.index);
+			sessionStorage.removeItem("postId");
+		}
+
+
 		document.querySelector("#likeBtn").onclick = (event) => {
-			const username = rhit.fbAuthManager._user.displayName;
+			const uid = rhit.fbAuthManager._user.uid;
 			let likedByArr = this.curPost._likedBy;
-			if (!likedByArr.includes(username)) {
-				likedByArr.push(username);
+			if (!likedByArr.includes(uid)) {
+				likedByArr.push(uid);
 				rhit.fbStarsManager.updateLikedBy(this.curPost._pid, likedByArr);
 			} else {
-				likedByArr.remove(username);
+				likedByArr.remove(uid);
 				rhit.fbStarsManager.updateLikedBy(this.curPost._pid, likedByArr);
 			}
 			this.updateView();
 		}
 
 		document.querySelector("#saveBtn").onclick = (event) => {
-			const username = rhit.fbAuthManager._user.displayName;
+			const uid = rhit.fbAuthManager._user.uid;
 			this.userData = rhit.fbUserDataManager.getUserData();
 			let savedByArr = this.curPost._savedBy;
 			let userDataColArr = this.userData._starCollections;
-			if (!savedByArr.includes(username)) {
-				savedByArr.push(username);
-				// rhit.fbStarsManager.updateSavedBy(this.curPost._pid, savedByArr);
+			if (!savedByArr.includes(uid)) {
+				savedByArr.push(uid);
 				userDataColArr.push(this.curPost._pid);
-				// rhit.fbUserDataManager.updateStarCollections(userDataColArr);
 			} else {
-				savedByArr.remove(username);
+				savedByArr.remove(uid);
 				userDataColArr.remove(this.curPost._pid);
 			}
 			rhit.fbStarsManager.updateSavedBy(this.curPost._pid, savedByArr);
@@ -671,17 +718,15 @@ rhit.MainPageController = class {
 		}
 	}
 
-	swapLikedByColor() {
-		const color = document.querySelector("#likeBtn").style.color;
-		if (color == "rgb(204, 0, 10)") {
-			document.querySelector("#likeBtn").style.color = "#555";
-		} else {
-			document.querySelector("#likeBtn").style.color = "#CC000A";
-		}
-	}
-
 	updateView() {
-		this.curPost = rhit.fbStarsManager.getStarPostAtIndex(this.index);
+		if (this._ssId == undefined) {
+			this.curPost = rhit.fbStarsManager.getStarPostAtIndex(this.index);
+		} else {
+			this.curPost = rhit.fbStarsManager.getStarPostByPid(this._ssId);
+			sessionStorage.removeItem("postId");
+			this.index = rhit.fbStarsManager.getStarPostIndexByPid(this._ssId);
+			this._ssId = undefined;
+		}
 		if (this.curPost == null || this.curPost == undefined) {
 			alert("Error occured!");
 			return;
@@ -693,9 +738,9 @@ rhit.MainPageController = class {
 		document.querySelector("#starDes").innerHTML = this.curPost._des;
 
 		// like btn
-		const username = rhit.fbAuthManager._user.displayName;
+		const uid = rhit.fbAuthManager._user.uid;
 		let likedByArr = this.curPost._likedBy;
-		if (likedByArr.includes(username)) {
+		if (likedByArr.includes(uid)) {
 			document.querySelector("#likeBtn").style.color = "#CC000A";
 		} else {
 			document.querySelector("#likeBtn").style.color = "#555";
@@ -703,7 +748,7 @@ rhit.MainPageController = class {
 
 		// save btn
 		let savedByArr = this.curPost._savedBy;
-		if (savedByArr.includes(username)) {
+		if (savedByArr.includes(uid)) {
 			document.querySelector("#saveBtn").style.color = "#F2E822";
 		} else {
 			document.querySelector("#saveBtn").style.color = "#555";
@@ -762,8 +807,10 @@ rhit.CommentPageController = class {
 
 rhit.PersonalPageController = class {
 	constructor() {
-		document.querySelector("#username").innerHTML = firebase.auth().currentUser.displayName;
-		document.querySelector("#email").innerHTML = firebase.auth().currentUser.email;
+		this._myStarCollections = null;
+
+		rhit.fbStarsManager.beginListening(this.updateView.bind(this));
+		rhit.fbUserDataManager.beginListening(this.updateView.bind(this));
 
 		document.querySelector("#profileBtn").onclick = (event) => {
 			window.location.href = "/update.html";
@@ -778,9 +825,47 @@ rhit.PersonalPageController = class {
 		}
 
 		document.querySelector("#followingBtn").onclick = (event) => {
-			// window.location.href = "/following.html";
+			// TODO: window.location.href = "/following.html";
 			window.location.href = "/otheruser.html";
 		}
+	}
+
+	updateView() {
+		document.querySelector("#username").innerHTML = firebase.auth().currentUser.displayName;
+		document.querySelector("#email").innerHTML = firebase.auth().currentUser.email;
+
+		// my star collection list
+		this._myStarCollections = rhit.fbStarsManager.getMyStarCollections();
+		this.updateList();
+	}
+
+	_createMyStarColsCard(post) {
+		return htmlToElement(`<div class="card">
+		<div class="card-body">
+		  <h5 class="card-title"><img src=${post._pic}>&nbsp;&nbsp;${post._title} by ${post._postBy}</h5>
+		</div>
+	  </div>`);
+	}
+
+	updateList() {
+		const newList = htmlToElement('<div id="myColContainer"></div>');
+		for (let i = this._myStarCollections.length - 1; i >= 0; i--) {
+			const post = this._myStarCollections[i];
+			const newCard = this._createMyStarColsCard(post);
+			if (i == this._myStarCollections.length) {
+				document.querySelector("#starPic").src = post._pic;
+			}
+			newCard.onclick = (event) => {
+				// window.location.href = `/moviequote.html?id=${mq.id}`;
+				window.location.href = "/main.html";
+				sessionStorage.setItem("postId", post._pid);
+			};
+			newList.append(newCard);
+		}
+		const oldList = document.querySelector("#myColContainer");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+		oldList.parentElement.append(newList);
 	}
 }
 
@@ -953,9 +1038,6 @@ rhit.OtherUserPageController = class {
 
 rhit.initPage = function () {
 	const urlParams = new URLSearchParams(window.location.search);
-	const uid = urlParams.get(`uid`);
-	rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
-	rhit.fbStarsManager = new rhit.FbStarsManager(uid);
 
 	// login page
 	if (document.querySelector("#loginPage")) {
@@ -980,6 +1062,9 @@ rhit.initPage = function () {
 
 	if (document.querySelector("#mainPage")) {
 		console.log("You are on main page");
+		rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
+		const uid = urlParams.get(`uid`);
+		rhit.fbStarsManager = new rhit.FbStarsManager(uid);
 		new rhit.MainPageController;
 	}
 
@@ -995,6 +1080,9 @@ rhit.initPage = function () {
 
 	if (document.querySelector("#personalPage")) {
 		console.log("You are on personal page");
+		rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
+		const uid = urlParams.get(`uid`);
+		rhit.fbStarsManager = new rhit.FbStarsManager(uid);
 		new rhit.PersonalPageController;
 	}
 
