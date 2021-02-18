@@ -208,19 +208,7 @@ ul li a:hover .fas {
 }
 
 ul li:nth-child(1) a:hover .fas {
-    color: #CC000A;
-}
-
-ul li:nth-child(2) a:hover .fas {
-    color: #F2E822;
-}
-
-ul li:nth-child(3) a:hover .fas {
     color: #1c7dd5;
-}
-
-ul li:nth-child(4) a:hover .fas {
-    color: #4cd137;
 }
 
 #starTitle {
@@ -245,10 +233,27 @@ ul li:nth-child(4) a:hover .fas {
     text-align: center;
 }
 
+#commentBtn {
+    width: 300px;
+}
+
 @media (min-width:200px) {
     #starPic {
         height: 300px;
         width: 300px;
+    }
+
+    ul li a {
+        display: block;
+        width: 300px;
+        height: 50px;
+        background: #18191f;
+        line-height: 55px;
+        text-align: center;
+        margin: 0 10px;
+        border-radius: 15px;
+        box-shadow: -2px -2px 3px rgba(255, 255, 255, 0.05), 3px 3px 3px rgba(0, 0, 0, 0.2);
+        transition: all .2s ease-in-out;
     }
 
     #actionBtns {
@@ -279,6 +284,19 @@ ul li:nth-child(4) a:hover .fas {
         width: 400px;
     }
 
+    ul li a {
+        display: block;
+        width: 300px;
+        height: 50px;
+        background: #18191f;
+        line-height: 55px;
+        text-align: center;
+        margin: 0 10px;
+        border-radius: 15px;
+        box-shadow: -2px -2px 3px rgba(255, 255, 255, 0.05), 3px 3px 3px rgba(0, 0, 0, 0.2);
+        transition: all .2s ease-in-out;
+    }
+
     #actionBtns {
         text-align: center;
         justify-content: center;
@@ -301,6 +319,19 @@ ul li:nth-child(4) a:hover .fas {
     #starPic {
         height: 480px;
         width: 480px;
+    }
+
+    ul li a {
+        display: block;
+        width: 320px;
+        height: 50px;
+        background: #18191f;
+        line-height: 55px;
+        text-align: center;
+        margin: 0 10px;
+        border-radius: 15px;
+        box-shadow: -2px -2px 3px rgba(255, 255, 255, 0.05), 3px 3px 3px rgba(0, 0, 0, 0.2);
+        transition: all .2s ease-in-out;
     }
 
     #actionBtns {

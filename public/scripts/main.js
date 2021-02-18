@@ -137,7 +137,7 @@ rhit.User = class {
 }
 
 rhit.Post = class {
-	constructor(pid, postBy, title, des, pic, likedBy, savedBy, postByUsername) {
+	constructor(pid, postBy, title, des, pic, likedBy, savedBy, postByUsername, comments) {
 		this._pid = pid;
 		this._postBy = postBy;
 		this._title = title;
@@ -145,7 +145,7 @@ rhit.Post = class {
 		this._pic = pic;
 		this._likedBy = likedBy;
 		this._savedBy = savedBy;
-		this._comments = [];
+		this._comments = comments;
 		this._postByUsername = postByUsername;
 	}
 }
@@ -208,7 +208,7 @@ rhit.FbUserDataManager = class {
 	beginListening(changeListener) {
 		this._unsubscribe = this._ref.onSnapshot((doc) => {
 			if (doc.exists) {
-				console.log("--------------Document data:", doc.data());
+				console.log("Document data:", doc.data());
 				this._documentSnapshot = doc;
 				changeListener();
 			} else {
@@ -375,7 +375,8 @@ rhit.FbStarsManager = class {
 			docSnapshot.get(rhit.FB_KEY_PIC),
 			docSnapshot.get(rhit.FB_KEY_LIKEDBY),
 			docSnapshot.get(rhit.FB_KEY_SAVEDBY),
-			docSnapshot.get(rhit.FB_KEY_POSTBYUSERNAME)
+			docSnapshot.get(rhit.FB_KEY_POSTBYUSERNAME),
+			docSnapshot.get(rhit.FB_KEY_COMMENTS)
 			//TODO: other fields
 		);
 		return post;
@@ -394,7 +395,8 @@ rhit.FbStarsManager = class {
 					docSnapshot.get(rhit.FB_KEY_PIC),
 					docSnapshot.get(rhit.FB_KEY_LIKEDBY),
 					docSnapshot.get(rhit.FB_KEY_SAVEDBY),
-					docSnapshot.get(rhit.FB_KEY_POSTBYUSERNAME)
+					docSnapshot.get(rhit.FB_KEY_POSTBYUSERNAME),
+					docSnapshot.get(rhit.FB_KEY_COMMENTS)
 					//TODO: other fields
 				);
 				break;
@@ -437,7 +439,8 @@ rhit.FbStarsManager = class {
 				docSnapshot.get(rhit.FB_KEY_PIC),
 				docSnapshot.get(rhit.FB_KEY_LIKEDBY),
 				docSnapshot.get(rhit.FB_KEY_SAVEDBY),
-				docSnapshot.get(rhit.FB_KEY_POSTBYUSERNAME)
+				docSnapshot.get(rhit.FB_KEY_POSTBYUSERNAME),
+				docSnapshot.get(rhit.FB_KEY_COMMENTS)
 				//TODO: other fields
 			);
 			if (post._savedBy.includes(uid)) {
@@ -453,6 +456,18 @@ rhit.FbStarsManager = class {
 			})
 			.then(() => {
 				console.log("update likedBy success");
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
+	updateComments(postId, comments) {
+		this._ref.doc(postId).update({
+				[rhit.FB_KEY_COMMENTS]: comments
+			})
+			.then(() => {
+				console.log("update comments success");
 			})
 			.catch((error) => {
 				console.log(error);
@@ -750,6 +765,8 @@ rhit.MainPageController = class {
 
 		document.querySelector("#commentBtn").onclick = (event) => {
 			// TODO: storageSession pass in save and like state
+			sessionStorage.setItem("curPost", JSON.stringify(this.curPost));
+			sessionStorage.setItem("userData", JSON.stringify(this.userData));
 			window.location.href = "/comment.html";
 		}
 
@@ -803,7 +820,6 @@ rhit.MainPageController = class {
 
 	updateView1() {
 		// follow user
-		console.log("---------------------------------------------------------");
 		let e = document.getElementById('followUser');
 		this.userData = rhit.fbUserDataManager.getUserData();
 		let userDataFollowingArr = this.userData._followings;
@@ -870,45 +886,53 @@ function createCard(comment) {
 
 rhit.CommentPageController = class {
 	constructor() {
-		this._comments = [];
+		let postJsonStr = sessionStorage.getItem("curPost");
+		this._curPost = JSON.parse(postJsonStr);
+		console.log("from json post",this._curPost);
 
-		document.querySelector("#likeBtn").onclick = (event) => {
-			const color = document.querySelector("#likeBtn").style.color;
-			if (color == "rgb(204, 0, 10)") {
-				document.querySelector("#likeBtn").style.color = "#555";
-			} else {
-				document.querySelector("#likeBtn").style.color = "#CC000A";
-			}
-			console.log(color);
-		}
+		let userJsonStr = sessionStorage.getItem("userData");
+		this._userData = JSON.parse(userJsonStr);
+		console.log("from json user",this._userData);
 
-		document.querySelector("#saveBtn").onclick = (event) => {
-			const color = document.querySelector("#saveBtn").style.color;
-			if (color == "rgb(242, 232, 34)") {
-				document.querySelector("#saveBtn").style.color = "#555";
-			} else {
-				document.querySelector("#saveBtn").style.color = "#F2E822";
-			}
-			console.log(color);
-		}
+		rhit.fbStarsManager.beginListening(this.updateList.bind(this));
 
 		document.querySelector("#backBtn").onclick = (event) => {
-			// TODO: storageSession pass in save and like state
+			sessionStorage.removeItem("userData");
+			sessionStorage.removeItem("curPost");
 			window.location.href = "/main.html";
 		}
 
 		document.querySelector("#submitAddComment").onclick = (event) => {
 			// TODO: firebase add
-			const comment = document.querySelector("#inputComment").value;
-			console.log(`comment = ${comment}`);
-			const newList = htmlToElement('<div id="commentContainer"></div>');
-			const newCard = createCard(comment);
-			newList.append(newCard);
-			const oldList = document.querySelector("#commentContainer");
-			oldList.removeAttribute("id");
-			oldList.hidden = true;
-			oldList.parentElement.append(newList);
+			let cmtInput = document.querySelector("#inputComment").value;
+			let comment = `${this._userData._username}: ${cmtInput}`;
+			console.log("comment", comment);
+			this._curPost._comments.push(comment);
+			rhit.fbStarsManager.updateComments(this._curPost._pid, this._curPost._comments);
 		}
+
+		document.querySelector("#starPic").src = this._curPost._pic;
+
+		document.querySelector("#starTitle").innerHTML = this._curPost._title;
+
+		document.querySelector("#starDes").innerHTML = this._curPost._des;
+	}
+
+	updateList() {
+		const newList = htmlToElement('<div id="commentContainer"></div>');
+		for (let i = 0; i < this._curPost._comments.length; i++) {
+			const comment = this._curPost._comments[i];
+			const newCard = this._createCommentCard(comment);
+			newList.append(newCard);
+		}
+		const oldList = document.querySelector("#commentContainer");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+		oldList.parentElement.append(newList);
+	}
+
+	_createCommentCard(comment) {
+		return htmlToElement(`<h5 id="comment">${comment}</h5>`);
 	}
 }
 
@@ -1090,7 +1114,6 @@ rhit.FollowingPageController = class { // following list
 
 	updateList() {
 		this._userData = rhit.fbUserDataManager.getUserData()
-		console.log(this._userData._followings);
 		const newList = htmlToElement('<div id="followingListContainer"></div>');
 		for (let i = 0; i < rhit.fbOtherUserManager.length; i++) {
 			const otherUser = rhit.fbOtherUserManager.getOtherUserAtIndex(i);
@@ -1167,6 +1190,7 @@ rhit.MyPostsPageController = class {
 rhit.OtherUserPageController = class {
 	constructor() {
 		let userJsonStr = sessionStorage.getItem("otherUser");
+		sessionStorage.removeItem("otherUser");
 		this._otherUser = JSON.parse(userJsonStr);
 
 		document.querySelector("#username").innerHTML = this._otherUser._username;
@@ -1225,8 +1249,8 @@ rhit.OtherUserPageController = class {
 			}
 			const newCard = this._createOtherUserPostsCard(post);
 			newCard.onclick = (event) => {
-				// window.location.href = "/otheruser.html";
-				// sessionStorage.setItem("otherUser", JSON.stringify(otherUser));
+				window.location.href = "/main.html";
+				sessionStorage.setItem("postId", post._pid);
 			};
 			newList.append(newCard);
 		}
@@ -1273,13 +1297,14 @@ rhit.initPage = function () {
 		console.log("You are on main page");
 		rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
 		const uid = urlParams.get(`uid`);
-		console.log("uid", uid);
 		rhit.fbStarsManager = new rhit.FbStarsManager(uid);
 		new rhit.MainPageController;
 	}
 
 	if (document.querySelector("#commentPage")) {
 		console.log("You are on comment page");
+		const uid = urlParams.get(`uid`);
+		rhit.fbStarsManager = new rhit.FbStarsManager(uid);
 		new rhit.CommentPageController;
 	}
 
