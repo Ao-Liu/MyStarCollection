@@ -219,6 +219,15 @@ ul li:nth-child(3) a:hover .fas {
     color: #F2E822;
 }
 
+ul li:nth-child(4) a:hover .fas {
+    color: #F2E822;
+}
+
+#signoutContainer {
+    text-align: center;
+    justify-content: center;
+}
+
 #username {
     text-align: center;
 }

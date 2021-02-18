@@ -1018,7 +1018,10 @@ rhit.PersonalPageController = class {
 
 		document.querySelector("#followingBtn").onclick = (event) => {
 			window.location.href = "/following.html";
-			// window.location.href = "/otheruser.html";
+		}
+
+		document.querySelector("#signoutBtn").onclick = (event) => {
+			firebase.auth().signOut();
 		}
 	}
 
@@ -1429,9 +1432,9 @@ rhit.checkForRedirects = function () {
 		window.location.href = "/main.html";
 	}
 
-	// if (rhit.fbAuthManager.isSignedIn) {
-	// 	window.location.href = "/main.html";
-	// }
+	if (!rhit.fbAuthManager.isSignedIn && document.querySelector("#mainPage")) {
+		window.location.href = "/index.html";
+	}
 
 	if (!document.querySelector("#loginPage") && !document.querySelector("#resetPwPage") && !document.querySelector("#signupPage") && !rhit.fbAuthManager.isSignedIn) {
 		window.location.href = "/index.html";
