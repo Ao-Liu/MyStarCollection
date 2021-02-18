@@ -24,6 +24,7 @@ rhit.userData = null;
 rhit.fbAuthManager = null;
 rhit.fbStarsManager = null;
 rhit.fbUserDataManager = null;
+rhit.fbOtherUserManager = null;
 
 //Util classes
 function htmlToElement(html) {
@@ -207,7 +208,7 @@ rhit.FbUserDataManager = class {
 	beginListening(changeListener) {
 		this._unsubscribe = this._ref.onSnapshot((doc) => {
 			if (doc.exists) {
-				console.log("Document data:", doc.data());
+				console.log("--------------Document data:", doc.data());
 				this._documentSnapshot = doc;
 				changeListener();
 			} else {
@@ -273,7 +274,7 @@ rhit.FbUserDataManager = class {
 	}
 }
 
-rhit.FbOtherUsersManager = class {
+rhit.FbOtherUserManager = class {
 	constructor(uid) {
 		this._uid = uid;
 		this._documentSnapshots = [];
@@ -282,18 +283,33 @@ rhit.FbOtherUsersManager = class {
 	}
 
 	beginListening(changeListener) {
-		let query = this._ref.orderBy(rhit.FB_KEY_POSTTIME, "desc").limit(50);
-		console.log("_uid", this._uid);
-		if (this._uid) {
-			query = query.where(rhit.FB_KEY_POSTBY, "==", this._uid);
-		}
-
+		let query = this._ref.limit(50);
 		this._unsusubscribe = query
 			.onSnapshot((querySnapshot) => {
 				this._documentSnapshots = querySnapshot.docs;
-				console.log(this._documentSnapshots);
+				console.log("snapshot", this._documentSnapshots);
 				changeListener();
 			});
+	}
+
+	getOtherUserAtIndex(index) {
+		const docSnapshot = this._documentSnapshots[index];
+		const otherUser = new rhit.User(
+			docSnapshot.id,
+			docSnapshot.get(rhit.FB_KEY_FOLLOWING),
+			docSnapshot.get(rhit.FB_KEY_POSTS),
+			docSnapshot.get(rhit.FB_KEY_STARCOLLECTIONS),
+			docSnapshot.get(rhit.FB_KEY_USERNAME)
+		);
+		return otherUser;
+	}
+
+	stopListening() {
+		this._unsusubscribe();
+	}
+
+	get length() {
+		return this._documentSnapshots.length;
 	}
 }
 
@@ -668,7 +684,7 @@ rhit.MainPageController = class {
 		this.index = 0;
 
 		rhit.fbStarsManager.beginListening(this.updateView.bind(this));
-		rhit.fbUserDataManager.beginListening(this.updateView.bind(this));
+		rhit.fbUserDataManager.beginListening(this.updateView1.bind(this));
 
 		this._ssId = sessionStorage.getItem("postId");
 		if (this._ssId != undefined) {
@@ -717,8 +733,8 @@ rhit.MainPageController = class {
 			author = author.replace("&nbsp;&nbsp;", "");
 			// console.log("following", userDataFollowingArr);
 			if (!userDataFollowingArr.includes(this.curPost._postBy)) {
-				userDataFollowingArr.push(this.curPost._postBy + this.curPost._postByUsername);
-				console.log(document.querySelector("#author").innerHTML);
+				userDataFollowingArr.push(this.curPost._postBy);
+				//  + this.curPost._postByUsername);
 				e.classList.remove('fa-user-plus');
 				e.classList.add('fa-user-check');
 				alert(`You are now following ${author}`);
@@ -729,7 +745,7 @@ rhit.MainPageController = class {
 				alert(`You have unfollowed ${author}`);
 			}
 			rhit.fbUserDataManager.updateFollowings(userDataFollowingArr);
-			this.updateView();
+			this.updateView1();
 		}
 
 		document.querySelector("#commentBtn").onclick = (event) => {
@@ -782,6 +798,21 @@ rhit.MainPageController = class {
 				this.index = 0;
 			}
 			this.updateView();
+		}
+	}
+
+	updateView1() {
+		// follow user
+		console.log("---------------------------------------------------------");
+		let e = document.getElementById('followUser');
+		this.userData = rhit.fbUserDataManager.getUserData();
+		let userDataFollowingArr = this.userData._followings;
+		if (!userDataFollowingArr.includes(this.curPost._postBy)) {// unfollowed
+			e.classList.remove('fa-user-check');
+			e.classList.add('fa-user-plus');
+		} else {// following
+			e.classList.remove('fa-user-plus');
+			e.classList.add('fa-user-check');
 		}
 	}
 
@@ -1051,17 +1082,25 @@ rhit.FollowingPageController = class { // following list
 			window.location.href = "/personal.html";
 		}
 
-
+		rhit.fbUserDataManager.beginListening(this.updateView.bind(this));
+		rhit.fbOtherUserManager.beginListening(this.updateList.bind(this));
 	}
 
+	updateView() {}
+
 	updateList() {
+		this._userData = rhit.fbUserDataManager.getUserData()
+		console.log(this._userData._followings);
 		const newList = htmlToElement('<div id="followingListContainer"></div>');
-		for (let i = 0; i < this._myStarCollections.length; i++) {
-			const post = this._myStarCollections[i];
-			const newCard = this._createMyFollowingCard(post);
+		for (let i = 0; i < rhit.fbOtherUserManager.length; i++) {
+			const otherUser = rhit.fbOtherUserManager.getOtherUserAtIndex(i);
+			if (!this._userData._followings.includes(otherUser._uid)) {
+				continue;
+			}
+			const newCard = this._createMyFollowingCard(otherUser._username);
 			newCard.onclick = (event) => {
-				// window.location.href = "/main.html";
-				// sessionStorage.setItem("postId", post._pid);
+				window.location.href = "/otheruser.html";
+				sessionStorage.setItem("otherUser", JSON.stringify(otherUser));
 			};
 			newList.append(newCard);
 		}
@@ -1127,27 +1166,82 @@ rhit.MyPostsPageController = class {
 
 rhit.OtherUserPageController = class {
 	constructor() {
+		let userJsonStr = sessionStorage.getItem("otherUser");
+		this._otherUser = JSON.parse(userJsonStr);
+
+		document.querySelector("#username").innerHTML = this._otherUser._username;
+		document.querySelector("#star").innerHTML = "&nbsp;&nbsp;" + this._otherUser._username + "'s posts";
+
+		rhit.fbUserDataManager.beginListening(this.updateView.bind(this))
+		rhit.fbStarsManager = new rhit.FbStarsManager(this._otherUser._uid);
+		rhit.fbStarsManager.beginListening(this.updateList.bind(this));
+
 		document.querySelector("#backBtn").onclick = (event) => {
-			// window.location.href = "/personal.html";
 			window.location.href = "/following.html";
 		}
 
 		document.querySelector("#unfollowBtn").onclick = (event) => {
 			let e = document.getElementById('unfollowBtn');
-			console.log(e.style.background);
-			let username = document.querySelector("#username").innerHTML;
-			if (e.classList.contains('fa-user-times')) {
-				e.classList.remove('fa-user-times');
-				e.classList.add('fa-user-plus');
-				e.innerHTML = "&nbsp;Follow";
-				alert(`You have unfollowed ${username}`);
+			const uid = rhit.fbAuthManager._user.uid;
+			this.userData = rhit.fbUserDataManager.getUserData();
+			let userDataFollowingArr = this.userData._followings;
+			let author = document.querySelector("#username").innerHTML;
+			author = author.replace("&nbsp;&nbsp;", "");
+			if (!userDataFollowingArr.includes(this._otherUser._uid)) {
+				userDataFollowingArr.push(this._otherUser._uid);
+				alert(`You are now following ${author}`);
 			} else {
-				e.classList.remove('fa-user-plus');
-				e.classList.add('fa-user-times');
-				e.innerHTML = "&nbsp;Unfollow";
-				alert(`You are following ${username}`);
+				userDataFollowingArr.remove(this._otherUser._uid);
+				alert(`You have unfollowed ${author}`);
 			}
+			rhit.fbUserDataManager.updateFollowings(userDataFollowingArr);
+			this.updateView();
 		}
+	}
+
+	updateView() {
+		let e = document.getElementById('unfollowBtn');
+		const uid = rhit.fbAuthManager._user.uid;
+		this.userData = rhit.fbUserDataManager.getUserData();
+		let userDataFollowingArr = this.userData._followings;
+		if (!userDataFollowingArr.includes(this._otherUser._uid)) {
+			e.classList.remove('fa-user-times');
+			e.classList.add('fa-user-plus');
+			e.innerHTML = "&nbsp;Follow";
+		} else {
+			e.classList.remove('fa-user-plus');
+			e.classList.add('fa-user-times');
+			e.innerHTML = "&nbsp;Unfollow";
+		}
+	}
+
+	updateList() {
+		const newList = htmlToElement('<div id="otherUserpostContainer"></div>');
+		for (let i = 0; i < rhit.fbStarsManager.length; i++) {
+			const post = rhit.fbStarsManager.getStarPostAtIndex(i);
+			console.log(post);
+			if (!this._otherUser._posts.includes(post._pid)) {
+				continue;
+			}
+			const newCard = this._createOtherUserPostsCard(post);
+			newCard.onclick = (event) => {
+				// window.location.href = "/otheruser.html";
+				// sessionStorage.setItem("otherUser", JSON.stringify(otherUser));
+			};
+			newList.append(newCard);
+		}
+		const oldList = document.querySelector("#otherUserpostContainer");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+		oldList.parentElement.append(newList);
+	}
+
+	_createOtherUserPostsCard(post) {
+		return htmlToElement(`<div class="card">
+		<div class="card-body">
+		  <h5 class="card-title"><img src=${post._pic}>&nbsp;&nbsp;${post._title} by ${post._postByUsername}</h5>
+		</div>
+	  </div>`);
 	}
 }
 
@@ -1204,6 +1298,9 @@ rhit.initPage = function () {
 
 	if (document.querySelector("#followingPage")) {
 		console.log("You are on following page");
+		rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
+		let uid = urlParams.get(`uid`);
+		rhit.fbOtherUserManager = new rhit.FbOtherUserManager(uid);
 		new rhit.FollowingPageController;
 	}
 
@@ -1224,6 +1321,7 @@ rhit.initPage = function () {
 
 	if (document.querySelector("#otherUserPage")) {
 		console.log("You are on other user page");
+		rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
 		new rhit.OtherUserPageController;
 	}
 }
