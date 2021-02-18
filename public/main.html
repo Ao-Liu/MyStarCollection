@@ -25,21 +25,21 @@
   <div id="mainPage" class="row gutters justify-content-center">
     <div id="starHolder">
       <div id="authorHolder" class="row gutters justify-content-left">
-        <h3 id="author">@XXX&nbsp;&nbsp;</i></h3>
+        <h3 id="author">@Loading&nbsp;&nbsp;</i></h3>
         <h5><i id="followUser" class="fas fa-user-plus"></i></h5>
       </div>
       <div>&nbsp;</div>
       <img id="starPic" src="images/neptune_loading.png">
     </div>
     <form id="caption" action="" class="form">
-      <h1 id="starTitle">XXX</h1>
-      <h3 id="starDes">XXX</h3>
+      <h1 id="starTitle">Loading</h1>
+      <h3 id="starDes">Loading</h3>
       <div>&nbsp;</div>
       <ul id="actionBtns">
         <li><a href="#"><i id="likeBtn" class="fas fa-heart"></i></a></li>
         <li><a href="#"><i id="saveBtn" class="fas fa-star"></i></a></li>
         <li><a href="#"><i id="commentBtn" class="fas fa-comment"></i></a></li>
-        <li><a href="#"><i id="shareBtn" class="fas fa-share"></i></a></li>
+        <li id="shareBtn"><a href="#"><i class="fas fa-edit" data-toggle="modal" data-target="#editStar"></i></a></li>
       </ul>
     </form>
 
@@ -49,17 +49,17 @@
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Post A Star</h5>
+            <h5 class="modal-title" id="exampleModalLabel">New Star</h5>
           </div>
           <div class="modal-body">
 
             <div class="form-group">
-              <label for="formGroupExampleInput">Star Name</label>
+              <label for="formGroupExampleInput">Name of the Star</label>
               <input type="text" class="form-control" id="inputStarName" placeholder="Name">
             </div>
 
             <div class="form-group">
-              <label for="formGroupExampleInput">Star Description</label>
+              <label for="formGroupExampleInput">Description</label>
               <input type="text" class="form-control" id="inputStarDes" placeholder="Description">
             </div>
 
@@ -81,6 +81,38 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="editStar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Update A Post</h5>
+          </div>
+          <div class="modal-body">
+
+            <div class="form-group">
+              <label for="formGroupExampleInput">Name of the Star</label>
+              <input type="text" class="form-control" id="updateStarName" placeholder="Name">
+            </div>
+
+            <div class="form-group">
+              <label for="formGroupExampleInput">Star Description</label>
+              <input type="text" class="form-control" id="updateStarDes" placeholder="Description">
+            </div>
+            <h5 id="redOr">OR</h5>
+            <button type="button" class="btn btn-raised btn-danger" id="deleteStar">DELETE POST</button>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button id="submitEditStar" type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
