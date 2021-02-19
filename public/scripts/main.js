@@ -892,7 +892,7 @@ rhit.MainPageController = class {
 				this.index = 0;
 			}
 			this.updateView();
-			// this.updateView1();
+			this.updateView1();
 		}
 
 		document.querySelector("#deleteStar").onclick = (event) => {
