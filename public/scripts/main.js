@@ -233,6 +233,18 @@ rhit.FbUserDataManager = class {
 			});
 	}
 
+	updateUsername(username) {
+		this._ref.update({
+				[rhit.FB_KEY_USERNAME]: username
+			})
+			.then(() => {
+				console.log("update username success");
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
 	updateFollowings(followings) {
 		this._ref.update({
 				[rhit.FB_KEY_FOLLOWING]: followings
@@ -301,6 +313,24 @@ rhit.FbOtherUserManager = class {
 			docSnapshot.get(rhit.FB_KEY_STARCOLLECTIONS),
 			docSnapshot.get(rhit.FB_KEY_USERNAME)
 		);
+		return otherUser;
+	}
+
+	getUserById(uid) {
+		let otherUser = null;
+		for (let i = 0; i < this._documentSnapshots.length; i++) {
+			const docSnapshot = this._documentSnapshots[i];
+			if (docSnapshot.id == uid) {
+				otherUser = new rhit.User(
+					docSnapshot.id,
+					docSnapshot.get(rhit.FB_KEY_FOLLOWING),
+					docSnapshot.get(rhit.FB_KEY_POSTS),
+					docSnapshot.get(rhit.FB_KEY_STARCOLLECTIONS),
+					docSnapshot.get(rhit.FB_KEY_USERNAME)
+				);
+				break;
+			}
+		}
 		return otherUser;
 	}
 
@@ -728,6 +758,7 @@ rhit.MainPageController = class {
 
 		rhit.fbStarsManager.beginListening(this.updateView.bind(this));
 		rhit.fbUserDataManager.beginListening(this.updateView1.bind(this));
+		rhit.fbOtherUserManager.beginListening(this.updateView.bind(this));
 
 		this._ssId = sessionStorage.getItem("postId");
 		if (this._ssId != undefined) {
@@ -856,10 +887,12 @@ rhit.MainPageController = class {
 
 		document.querySelector("#nextBtn").onclick = (event) => {
 			this.index++;
+			console.log("length", rhit.fbStarsManager.length);
 			if (this.index >= rhit.fbStarsManager.length) {
 				this.index = 0;
 			}
 			this.updateView();
+			// this.updateView1();
 		}
 
 		document.querySelector("#deleteStar").onclick = (event) => {
@@ -895,15 +928,22 @@ rhit.MainPageController = class {
 			this.index = rhit.fbStarsManager.getStarPostIndexByPid(this._ssId);
 			this._ssId = undefined;
 		}
+		console.log("idx", this.index);
+		console.log("curPost", this.curPost);
+		console.log("uid", rhit.fbAuthManager._user.uid);
+		console.log("ssid", this._ssId);
 		if (this.curPost == null || this.curPost == undefined) {
 			alert("Error occured!");
 			return;
 		}
 		// post basic info
-		document.querySelector("#author").innerHTML = this.curPost._postByUsername + "&nbsp;&nbsp;";
-		document.querySelector("#starPic").src = this.curPost._pic;
-		document.querySelector("#starTitle").innerHTML = this.curPost._title;
-		document.querySelector("#starDes").innerHTML = this.curPost._des;
+		const postBy = rhit.fbOtherUserManager.getUserById(this.curPost._postBy);
+		if (postBy != null) {
+			document.querySelector("#author").innerHTML = postBy._username+"&nbsp;&nbsp;";
+			document.querySelector("#starPic").src = this.curPost._pic;
+			document.querySelector("#starTitle").innerHTML = this.curPost._title;
+			document.querySelector("#starDes").innerHTML = this.curPost._des;
+		}
 
 		// like btn
 		const uid = rhit.fbAuthManager._user.uid;
@@ -1070,6 +1110,8 @@ rhit.UpdatePageController = class {
 		const inputPasswordEl = document.querySelector("#pwInput");
 		const inputUsernameEl = document.querySelector("#usernameInput");
 
+		rhit.fbUserDataManager.beginListening(this.updateView.bind(this));
+
 		document.querySelector("#backBtn").onclick = (event) => {
 			window.location.href = "/personal.html";
 		}
@@ -1146,6 +1188,7 @@ rhit.UpdatePageController = class {
 				}).then(function () {
 					alert("Username updated");
 					console.log("new username: ", user.displayName);
+					rhit.fbUserDataManager.updateUsername(user.displayName);
 				}).catch(function (error) {
 					console.log(error);
 					switch (error) {
@@ -1162,6 +1205,8 @@ rhit.UpdatePageController = class {
 			document.querySelector("#usernameInput").value = "";
 		}
 	}
+
+	updateView() {}
 }
 
 rhit.FollowingPageController = class { // following list
@@ -1365,6 +1410,7 @@ rhit.initPage = function () {
 		rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
 		const uid = urlParams.get(`uid`);
 		rhit.fbStarsManager = new rhit.FbStarsManager(uid);
+		rhit.fbOtherUserManager = new rhit.FbOtherUserManager(uid);
 		new rhit.MainPageController;
 	}
 
@@ -1380,6 +1426,7 @@ rhit.initPage = function () {
 
 	if (document.querySelector("#updatePage")) {
 		console.log("You are on update page");
+		rhit.fbUserDataManager = new rhit.FbUserDataManager(firebase.auth().currentUser.uid);
 		new rhit.UpdatePageController;
 	}
 
