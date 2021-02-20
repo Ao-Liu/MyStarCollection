@@ -646,6 +646,7 @@ rhit.SignUpPageController = class {
 								[rhit.FB_KEY_FOLLOWING]: [],
 								[rhit.FB_KEY_POSTS]: [],
 								[rhit.FB_KEY_STARCOLLECTIONS]: [],
+								[rhit.FB_KEY_USERNAME]: inputUsernameEl.value
 							})
 							.then(function () {
 								console.log("User profile successfully written!");
@@ -938,12 +939,20 @@ rhit.MainPageController = class {
 		}
 		// post basic info
 		const postBy = rhit.fbOtherUserManager.getUserById(this.curPost._postBy);
+		console.log("postby ", postBy);
 		if (postBy != null) {
 			document.querySelector("#author").innerHTML = postBy._username+"&nbsp;&nbsp;";
+			console.log("postby username", postBy._username+"&nbsp;&nbsp;");
+			document.querySelector("#starPic").src = this.curPost._pic;
+			document.querySelector("#starTitle").innerHTML = this.curPost._title;
+			document.querySelector("#starDes").innerHTML = this.curPost._des;
+		} else {
+			document.querySelector("#author").innerHTML = this.curPost._postByUsername+"&nbsp;&nbsp;";
 			document.querySelector("#starPic").src = this.curPost._pic;
 			document.querySelector("#starTitle").innerHTML = this.curPost._title;
 			document.querySelector("#starDes").innerHTML = this.curPost._des;
 		}
+
 
 		// like btn
 		const uid = rhit.fbAuthManager._user.uid;
